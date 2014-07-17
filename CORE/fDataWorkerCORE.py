@@ -3,6 +3,8 @@
 
 import numpy as np
 from numpy import *
+from numpy import dot, sqrt, diag
+from numpy.linalg import eigh
 import theano
 import theano.tensor as T
 import csv as csv
@@ -10,6 +12,7 @@ import cPickle
 import time
 from scipy.cluster.vq import *
 import matplotlib.pylab as plt
+from PIL import Image, ImageOps, ImageFilter
 
 
 # ---------------------------------------------------------------------# ROLLOUT
@@ -33,18 +36,45 @@ def noisedSinGen(number=10000, phase=0):
     # Number of points
     time = np.linspace(-np.pi * 10, np.pi * 10, number)
     # y=(    sin(x - pi /2) + cos(x * 2 * pi)         ) / 10 + 0.5
-    #series = (np.sin((time+phase)-np.pi/2) + np.cos((time+phase)*2.0*np.pi))/10.0+0.5
+    # series = (np.sin((time+phase)-np.pi/2) + np.cos((time+phase)*2.0*np.pi))/10.0+0.5
     series = np.sin(time + phase) / 2 + 0.5
     noise = np.random.uniform(0.0, 0.01, number)
     data = series + noise  # Input data
-    #fig = plt.figure(figsize=(200, 9))
+    # fig = plt.figure(figsize=(200, 9))
     #ax = fig.add_subplot(1, 1, 1)
     #ax.scatter(time, data, s=5, alpha=0.5, color="blue")
     return (time, data)
 
 
-#---------------------------------------------------------------------#
+# ---------------------------------------------------------------------# DATA MANIPULATION
 
+
+class multiData(BatchMixin):  # Glues data in one block
+    def __init__(self, *objs):
+        xtuple = ()
+        ytuple = ()
+        for obj in objs:
+            xtuple += (obj.X,)
+            ytuple += (obj.Y,)
+        self.X = np.concatenate(xtuple, axis=1)
+        self.Y = np.concatenate(ytuple, axis=1)
+        self.number = self.X.shape[1]
+        self.input = self.X.shape[0]
+
+
+# ---------------------------------------------------------------------#
+
+
+class BatchMixin(object):
+    REPORT = "OK"
+
+    def miniBatch(self, number):  # Method for minibatch return
+        minIndex = np.random.randint(0, self.number, number)
+        self.miniX = self.X[:, minIndex]
+        return self.miniX, minIndex
+
+
+# ---------------------------------------------------------------------#
 
 class csvDataLoader(BatchMixin):  # Data loader from csv file
     def __init__(self, folder, startColumn=1, skip=1):
@@ -58,7 +88,7 @@ class csvDataLoader(BatchMixin):  # Data loader from csv file
         self.input = len(self.X)
 
 
-#---------------------------------------------------------------------#
+# ---------------------------------------------------------------------#
 
 
 class DataMutate(object):
@@ -97,4 +127,4 @@ class DataMutate(object):
         return xPCAWhite
 
 
-#---------------------------------------------------------------------#
+# ---------------------------------------------------------------------#
