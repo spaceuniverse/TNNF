@@ -283,7 +283,7 @@ class FunctionModel(object):
 #---------------------------------------------------------------------#
 
 
-class newOptionsStore(object):
+class OptionsStore(object):
     def __init__(self,
                  learnStep=0.01,
                  rmsProp=False,
@@ -307,7 +307,7 @@ class newOptionsStore(object):
 #---------------------------------------------------------------------#
 
 
-class newTheanoNNclass(object):
+class TheanoNNclass(object):
     def __init__(self, opt, architecture):
         self.REPORT = "OK"
 
@@ -504,13 +504,8 @@ class newTheanoNNclass(object):
         self.getStatus()
         return self
 
-
-#---------------------------------------------------------------------#
-# OLD neural net class
-#---------------------------------------------------------------------#
-
-
-class TheanoNNclass(object):
+    # TODO - THIS METHOD SHOULD BE CHANGED FOR NEW ARCH
+    """
     def weightsVisualizer(self, folder, size=(100, 100),
                           color="L"):  # For now only for first layer. Second in test mode
         W1 = self.gradArray[0].get_value()
@@ -522,6 +517,7 @@ class TheanoNNclass(object):
             img = np.dot(W1.T, W2[w, :]).reshape(size[0], size[1])
             Graphic.PicSaver(img, folder, "L2_" + str(w), color)
         return self
+    """
 
 
 #---------------------------------------------------------------------#

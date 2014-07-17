@@ -24,7 +24,7 @@ numofseq = 50   # number ob seq
 
 print "Options:"
 
-OPTIONS = newOptionsStore(learnStep=learnStep,
+OPTIONS = OptionsStore(learnStep=learnStep,
                           rmsProp=0.9,
                           rProp=False,
                           minibatch_size=batchSize)
@@ -38,7 +38,7 @@ L2 = LayerRNN(size_in=w_size,
 
 # ---------------------------------------------------------------------#
 
-newNN = newTheanoNNclass(OPTIONS, (L2, ))
+newNN = TheanoNNclass(OPTIONS, (L2, ))
 
 newNN.trainCompile()
 newNN.predictCompile()
