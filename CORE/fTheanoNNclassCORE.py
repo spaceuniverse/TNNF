@@ -55,6 +55,7 @@ class LayerNN(object):
 
     def compileWeight(self, net, layerNum):
         random = sqrt(6) / sqrt(net.architecture[0].size_in + net.architecture[-1].size_out)
+        W = dict()
 
         #In case MaxOut we have to extend weights times pool_size
         if self.activation != FunctionModel.MaxOut:
@@ -70,13 +71,15 @@ class LayerNN(object):
 
         w = theano.shared((weights * 2 * random - random).astype(theano.config.floatX), name="w%s" % (layerNum + 1))
 
-        net.varArrayW.append(w)
+        W['w'] = w
+
         if self.activation != FunctionModel.MaxOut:
             b = theano.shared(np.tile(0.0, (self.size_out,)).astype(theano.config.floatX), name="b%s" % (layerNum + 1))
         else:
             b = theano.shared(np.tile(0.0, (self.size_out * self.pool_size,)).astype(theano.config.floatX),
                               name="b%s" % (layerNum + 1))
-        net.varArrayB.append(b)
+        W['b'] = b
+        net.varWeights.append(W)
 
     def compileDropout(self, net, R):
         if self.dropout:
@@ -94,19 +97,19 @@ class LayerNN(object):
 
     def compileActivation(self, net, layerNum):
         variable = net.x if layerNum == 0 else net.varArrayA[layerNum - 1]
-        a = self.activation(net.varArrayW[layerNum],
+        a = self.activation(net.varWeights[layerNum]['w'],
                             variable * (net.dropOutVectors[layerNum].dimshuffle(0, 'x') if self.dropout else 1.0),
-                            net.varArrayB[layerNum], self.pool_size)
+                            net.varWeights[layerNum]['b'], self.pool_size)
         net.varArrayA.append(a)
 
     def compilePredictActivation(self, net, layerNum):
         variable = net.x if layerNum == 0 else net.varArrayAc[layerNum - 1]
-        a = self.activation(net.varArrayW[layerNum] * (self.dropout if self.dropout else 1.0), variable,
-                            net.varArrayB[layerNum], self.pool_size)
+        a = self.activation(net.varWeights[layerNum]['w'] * (self.dropout if self.dropout else 1.0), variable,
+                            net.varWeights[layerNum]['b'], self.pool_size)
         net.varArrayAc.append(a)
 
     def compileWeightDecayPenalty(self, net, layerNum):
-        penalty = T.sum(net.varArrayW[layerNum] ** 2) * self.weightDecay / 2
+        penalty = T.sum(net.varWeights[layerNum]['w'] ** 2) * self.weightDecay / 2
         net.regularize.append(penalty)
 
 
@@ -132,6 +135,7 @@ class LayerRNN(LayerNN):
 
     def compileWeight(self, net, layerNum):
         random = 0.1
+        W = dict()
 
         # W
         weights = np.random.randn(self.internalOutSize, self.size_in)
@@ -144,7 +148,7 @@ class LayerRNN(LayerNN):
         weights = weights * 2 * random - random
 
         w = theano.shared(weights.astype(theano.config.floatX), name="w%s" % (layerNum + 1))
-        net.varArrayW.append(w)
+        W['w'] = w
 
         # B
         # German PhD magic recommendations...
@@ -156,7 +160,9 @@ class LayerRNN(LayerNN):
 
         b = theano.shared(B.astype(theano.config.floatX),
                           name="b%s" % (layerNum + 1))
-        net.varArrayB.append(b)
+        W['b'] = b
+
+        net.varWeights.append(W)
 
         # A
         self.A = theano.shared(np.tile(0.0, (self.blocks, net.options.minibatch_size)).astype(theano.config.floatX),
@@ -173,21 +179,27 @@ class LayerRNN(LayerNN):
                 mask[i, i * 4 + 1:i * 4 + 4] = 1
             mask = np.float32(mask)
             self.W_mask = mask
+        else:
+            self.W_mask = 1.0
 
     def compileActivation(self, net, layerNum):
         variable = net.x if layerNum == 0 else net.varArrayA[layerNum - 1]
 
-        extX = T.zeros((self.size_in, net.options.minibatch_size))
-        extX = T.set_subtensor(extX[:self.size_in - self.blocks, :], variable)
-        extX = T.set_subtensor(extX[self.size_in - self.blocks:, :], self.A)
+        if self.peeholes:
+            extX = T.zeros((self.size_in, net.options.minibatch_size))
+            extX = T.set_subtensor(extX[:self.size_in - self.blocks, :], variable)
+            extX = T.set_subtensor(extX[self.size_in - self.blocks:, :], self.A)
 
-        maskedW = T.set_subtensor(net.varArrayW[layerNum].T[-self.blocks:, :],
-                                  (net.varArrayW[layerNum].T[-self.blocks:, :] * self.W_mask).astype(
-                                      theano.config.floatX)).T
+            maskedW = T.set_subtensor(net.varWeights[layerNum]['w'].T[-self.blocks:, :],
+                                     (net.varWeights[layerNum]['w'].T[-self.blocks:, :] * self.W_mask).astype(theano.config.floatX)).T
 
-        a = self.activation(maskedW,
-                            extX * (net.dropOutVectors[layerNum].dimshuffle(0, 'x') if self.dropout else 1.0),
-                            net.varArrayB[layerNum])
+            a = self.activation(maskedW,
+                                extX * (net.dropOutVectors[layerNum].dimshuffle(0, 'x') if self.dropout else 1.0),
+                                net.varWeights[layerNum]['b'])
+        else:
+            a = self.activation(net.varWeights[layerNum]['w'],
+                                variable * (net.dropOutVectors[layerNum].dimshuffle(0, 'x') if self.dropout else 1.0),
+                                net.varWeights[layerNum]['b'])
 
         a = a.reshape((self.blocks, 4, net.options.minibatch_size))
 
@@ -202,17 +214,21 @@ class LayerRNN(LayerNN):
     def compilePredictActivation(self, net, layerNum):
         variable = net.x if layerNum == 0 else net.varArrayAc[layerNum - 1]
 
-        extX = T.zeros((self.size_in, net.options.CV_size))
-        extX = T.set_subtensor(extX[:self.size_in - self.blocks, :], variable)
-        extX = T.set_subtensor(extX[self.size_in - self.blocks:, :], self.A_predict)
+        if self.peeholes:
+            extX = T.zeros((self.size_in, net.options.CV_size))
+            extX = T.set_subtensor(extX[:self.size_in - self.blocks, :], variable)
+            extX = T.set_subtensor(extX[self.size_in - self.blocks:, :], self.A_predict)
 
-        maskedW = T.set_subtensor(net.varArrayW[layerNum].T[-self.blocks:, :],
-                                  (net.varArrayW[layerNum].T[-self.blocks:, :] * self.W_mask).astype(
-                                      theano.config.floatX)).T
+            maskedW = T.set_subtensor(net.varWeights[layerNum]['w'].T[-self.blocks:, :],
+                                     (net.varWeights[layerNum]['w'].T[-self.blocks:, :] * self.W_mask).astype(theano.config.floatX)).T
 
-        a = self.activation(maskedW * (self.dropout if self.dropout else 1.0),
-                            extX,
-                            net.varArrayB[layerNum])
+            a = self.activation(maskedW * (self.dropout if self.dropout else 1.0),
+                                extX,
+                                net.varWeights[layerNum]['b'])
+        else:
+            a = self.activation(net.varWeights[layerNum]['w'] * (self.dropout if self.dropout else 1.0),
+                                variable,
+                                net.varWeights[layerNum]['b'])
 
         a = a.reshape((self.blocks, 4, net.options.CV_size))
 
@@ -314,8 +330,7 @@ class TheanoNNclass(object):
         self.options = opt
         self.lastArrayNum = len(architecture)
 
-        self.varArrayW = []
-        self.varArrayB = []
+        self.varWeights = []
 
         # Variables
         self.x = T.matrix("x")
@@ -329,8 +344,8 @@ class TheanoNNclass(object):
         # TODO - revise to be more flexible in case RNN and CNN networks
         self.gradArray = []
         for i in xrange(self.lastArrayNum):  # Possible use len(self.varArrayB) or len(self.varArrayW) instead
-            self.gradArray.append(self.varArrayW[i])
-            self.gradArray.append(self.varArrayB[i])
+            for k in self.varWeights[i].keys():
+                self.gradArray.append(self.varWeights[i][k])
 
         # Dropout
         self.dropOutVectors = []
