@@ -20,6 +20,9 @@ dataset/
 test/
 api/
 
+#Python compiled files
+*.pyc
+
 # Windows Installer files
 *.cab
 *.msi

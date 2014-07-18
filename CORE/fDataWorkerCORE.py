@@ -46,6 +46,17 @@ def noisedSinGen(number=10000, phase=0):
     return (time, data)
 
 
+# ---------------------------------------------------------------------#
+
+class BatchMixin(object):
+    REPORT = "OK"
+
+    def miniBatch(self, number):  # Method for minibatch return
+        minIndex = np.random.randint(0, self.number, number)
+        self.miniX = self.X[:, minIndex]
+        return self.miniX, minIndex
+
+
 # ---------------------------------------------------------------------# DATA MANIPULATION
 
 
@@ -60,18 +71,6 @@ class multiData(BatchMixin):  # Glues data in one block
         self.Y = np.concatenate(ytuple, axis=1)
         self.number = self.X.shape[1]
         self.input = self.X.shape[0]
-
-
-# ---------------------------------------------------------------------#
-
-
-class BatchMixin(object):
-    REPORT = "OK"
-
-    def miniBatch(self, number):  # Method for minibatch return
-        minIndex = np.random.randint(0, self.number, number)
-        self.miniX = self.X[:, minIndex]
-        return self.miniX, minIndex
 
 
 # ---------------------------------------------------------------------#
