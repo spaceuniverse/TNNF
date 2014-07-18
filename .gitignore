@@ -20,6 +20,9 @@ dataset/
 test/
 api/
 
+#Script to run tests
+runTests.cmd
+
 #Python compiled files
 *.pyc
 
