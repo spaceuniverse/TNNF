@@ -1,4 +1,4 @@
-#---------------------------------------------------------------------#
+# ---------------------------------------------------------------------#
 from matplotlib.pylab import plot, title, xlabel, ylabel, legend, grid, margins, savefig, close, any
 import numpy as np
 #---------------------------------------------------------------------#
@@ -7,10 +7,10 @@ import numpy as np
 class Graph(object):
     @staticmethod
     def Builder(error=False,
-                     cv=False,
-                     accuracy=False,
-                     name='./GraphBuilder_default_name.png',
-                     **kwargs):
+                cv=False,
+                accuracy=False,
+                name='./GraphBuilder_default_name.png',
+                **kwargs):
 
         #Colors
         Colors = ['c', 'm', 'y', 'k']

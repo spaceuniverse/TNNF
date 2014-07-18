@@ -20,14 +20,14 @@ w_size = 10
 learnStep = 0.01
 batchSize = 1
 
-numofseq = 50   # number ob seq
+numofseq = 50  # number ob seq
 
 print "Options:"
 
 OPTIONS = OptionsStore(learnStep=learnStep,
-                          rmsProp=0.9,
-                          rProp=False,
-                          minibatch_size=batchSize)
+                       rmsProp=0.9,
+                       rProp=False,
+                       minibatch_size=batchSize)
 OPTIONS.Printer()
 
 L2 = LayerRNN(size_in=w_size,
@@ -75,7 +75,6 @@ ax = fig.add_subplot(1, 1, 1)
 ax.scatter(range(len(newNN.errorArray)), newNN.errorArray, s=5, alpha=0.9, color="orange")
 fig.savefig("./aaaaaaG.png")
 
-
 print "GB test"
 Graph.Builder(test=pred)
 
@@ -99,7 +98,7 @@ for i in range(number):
     print i, i + w_size, out
     ga.append(out)
     gd = np.append(gd, out).reshape((1, -1))
-    #print len(ga), gd.shape
+    # print len(ga), gd.shape
 
 fig = plt.figure(figsize=(200, 9))
 ax = fig.add_subplot(1, 1, 1)

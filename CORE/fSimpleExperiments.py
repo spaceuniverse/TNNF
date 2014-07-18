@@ -64,6 +64,7 @@ ax.scatter(markers, pred, s=5, alpha=0.5, color="red")
 ax.scatter(markers, newNN.errorArray, s=5, alpha=0.5, color="orange")
 
 fig.savefig("./aaaaaa.png")
+
 """
 gd = seq[:, number - w_size: number]
 ga = []
@@ -79,4 +80,5 @@ for i in range(number):
 ax.scatter(TIME, ga, s=5, alpha=0.5, color="violet")
 fig.savefig("./aaaaaa2.png")
 """
+
 print 'FINISH'

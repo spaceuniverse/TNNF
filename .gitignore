@@ -18,6 +18,7 @@ $RECYCLE.BIN/
 CORE_refactor/
 dataset/
 test/
+api/
 
 # Windows Installer files
 *.cab

@@ -32,6 +32,4 @@ fGraphBuilder.py - methods for building graphic, such as "train error" or "cv er
 fDataWorkerCORE.py - all data manipulation methods
 fCutClassCORE.py - methods which could be usefuul for working with images (can cut them for squares etc.)
 
-#JUST TEST
-Few words from RG
-
+###
