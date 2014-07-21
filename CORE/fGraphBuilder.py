@@ -43,8 +43,8 @@ class Graph(object):
         #Calc axes's step
         stepsDict = dict()
         for k in validDicts.keys():
-            s = np.true_divide(lenLongestDict, len(validDicts[k]))
-            stepsDict[k] = np.round(np.arange(0, lenLongestDict, s))
+            numberOfPoints = len(validDicts[k])
+            stepsDict[k] = np.round(np.linspace(0, lenLongestDict, numberOfPoints, endpoint=True))
 
         #plot
         for k in validDicts.keys():
@@ -73,8 +73,8 @@ class Graph(object):
 
 #---------------------------------------------------------------------#
 # EXAMPLE
-#d = np.sin(np.arange(0, 20, 0.01))
+#e = np.sin(np.arange(0, 20, 0.01))
 #c = np.sin(np.arange(0, 20, 0.3))
 #t = np.arange(0, 4, 0.1)
-#Graph.Builder(error=d, cv=c, test=t)
+#Graph.Builder(error=e, cv=c, test=t)
 #---------------------------------------------------------------------#
