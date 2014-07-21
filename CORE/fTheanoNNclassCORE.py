@@ -6,7 +6,7 @@
 
 # ---------------------------------------------------------------------#
 # External libraries
-#---------------------------------------------------------------------#
+# ---------------------------------------------------------------------#
 
 
 from PIL import Image, ImageOps, ImageFilter
@@ -18,12 +18,12 @@ from theano.tensor.shared_randomstreams import RandomStreams
 import theano
 import theano.tensor as T
 import cPickle
-import time
-#import datetime
+import time  # import datetime
 import matplotlib.pyplot as plt
+from fImageWorkerCORE import *
 
 
-#---------------------------------------------------------------------#
+# ---------------------------------------------------------------------#
 # Layer builders
 #---------------------------------------------------------------------#
 
@@ -191,7 +191,8 @@ class LayerRNN(LayerNN):
             extX = T.set_subtensor(extX[self.size_in - self.blocks:, :], self.A)
 
             maskedW = T.set_subtensor(net.varWeights[layerNum]['w'].T[-self.blocks:, :],
-                                     (net.varWeights[layerNum]['w'].T[-self.blocks:, :] * self.W_mask).astype(theano.config.floatX)).T
+                                      (net.varWeights[layerNum]['w'].T[-self.blocks:, :] * self.W_mask).astype(
+                                          theano.config.floatX)).T
 
             a = self.activation(maskedW,
                                 extX * (net.dropOutVectors[layerNum].dimshuffle(0, 'x') if self.dropout else 1.0),
@@ -220,7 +221,8 @@ class LayerRNN(LayerNN):
             extX = T.set_subtensor(extX[self.size_in - self.blocks:, :], self.A_predict)
 
             maskedW = T.set_subtensor(net.varWeights[layerNum]['w'].T[-self.blocks:, :],
-                                     (net.varWeights[layerNum]['w'].T[-self.blocks:, :] * self.W_mask).astype(theano.config.floatX)).T
+                                      (net.varWeights[layerNum]['w'].T[-self.blocks:, :] * self.W_mask).astype(
+                                          theano.config.floatX)).T
 
             a = self.activation(maskedW * (self.dropout if self.dropout else 1.0),
                                 extX,
@@ -489,7 +491,7 @@ class TheanoNNclass(object):
             counter += 1
         return self.model
 
-    def paramSetter(self, array):       # Setups loaded model parameters
+    def paramSetter(self, array):  # Setups loaded model parameters
         counter = 0
         for obj in self.gradArray:
             L = len(self.gradArray)
@@ -500,7 +502,7 @@ class TheanoNNclass(object):
                 theano.config.floatX))
             counter += 1
 
-    def modelSaver(self, folder):       # In cPickle format in txt file
+    def modelSaver(self, folder):  # In cPickle format in txt file
         f = file(folder, "wb")
         for obj in self.paramGetter():
             cPickle.dump(obj, f, protocol=cPickle.HIGHEST_PROTOCOL)
@@ -508,20 +510,19 @@ class TheanoNNclass(object):
         self.getStatus()
         return self
 
-    def modelLoader(self, folder):      # Path to model txt file
+    def modelLoader(self, folder):  # Path to model txt file
         f = file(folder, "rb")
         loadedObjects = []
-        for i in xrange(len(self.gradArray)):       # Array that contains w1 b1 w2 b2 etc.
+        for i in xrange(len(self.gradArray)):  # Array that contains w1 b1 w2 b2 etc.
             loadedObjects.append(cPickle.load(f))
-        f.close()                                   # Then we need to update W and B parameters
+        f.close()  # Then we need to update W and B parameters
         self.paramSetter(loadedObjects)
         self.getStatus()
         return self
 
-    # TODO - THIS METHOD SHOULD BE CHANGED FOR NEW ARCH
-    """
     def weightsVisualizer(self, folder, size=(100, 100),
                           color="L"):  # For now only for first layer. Second in test mode
+        # gradArray -> [w0, b0, w1, b1, ...]
         W1 = self.gradArray[0].get_value()
         W2 = self.gradArray[2].get_value()  # Second layer test. Weighted linear combination of the first layer bases
         for w in xrange(len(W1)):
@@ -531,7 +532,6 @@ class TheanoNNclass(object):
             img = np.dot(W1.T, W2[w, :]).reshape(size[0], size[1])
             Graphic.PicSaver(img, folder, "L2_" + str(w), color)
         return self
-    """
 
 
 #---------------------------------------------------------------------#
@@ -556,8 +556,8 @@ class NNsupport(object):
         fig.savefig(folder)
 
 
-#---------------------------------------------------------------------#
-# Can this really be the end? Back to work you go again
-#---------------------------------------------------------------------#
-#---------------------------------------------------------------------#
-#---------------------------------------------------------------------#
+        #---------------------------------------------------------------------#
+        # Can this really be the end? Back to work you go again
+        #---------------------------------------------------------------------#
+        #---------------------------------------------------------------------#
+        #---------------------------------------------------------------------#
