@@ -21,7 +21,6 @@ Features:
 + PCA whitening
 
 - convolution (in progress)
-- second layer weight visualization (needs to be fixed from old version)
 
 Files:
 

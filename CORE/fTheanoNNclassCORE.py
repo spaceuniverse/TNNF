@@ -480,27 +480,18 @@ class TheanoNNclass(object):
         return self
 
     def paramGetter(self):  # Returns the values of model parameters such as [w1, b1, w2, b2] ect.
-        self.model = []
-        counter = 0
-        for obj in self.gradArray:
-            L = len(self.gradArray)
-            M = range(0, L, 2)
-            variable = self.architecture[counter / 2].dropout if counter in M and self.architecture[
-                counter / 2].dropout else 1.0
-            self.model.append(obj.get_value() * variable)
-            counter += 1
-        return self.model
+        model = []
+        for i in xrange(self.lastArrayNum):  # Possible use len(self.varArrayB) or len(self.varArrayW) instead
+            variable = self.architecture[i].dropout if self.architecture[i].dropout else 1.0
+            model.append(self.varWeights[i]['w'].get_value() * variable)
+            model.append(self.varWeights[i]['b'].get_value())
+        return model
 
     def paramSetter(self, array):  # Setups loaded model parameters
-        counter = 0
-        for obj in self.gradArray:
-            L = len(self.gradArray)
-            M = range(0, L, 2)
-            variable = self.architecture[counter / 2].dropout if counter in M and self.architecture[
-                counter / 2].dropout else 1.0
-            obj.set_value((array[self.gradArray.index(obj)] / variable).astype(
-                theano.config.floatX))
-            counter += 1
+        for i in xrange(self.lastArrayNum):  # Possible use len(self.varArrayB) or len(self.varArrayW) instead
+            variable = self.architecture[i].dropout if self.architecture[i].dropout else 1.0
+            self.varWeights[i]['w'].set_value((array[i + 1 * i] / variable).astype(theano.config.floatX))
+            self.varWeights[i]['b'].set_value((array[i + 1 * i + 1]).astype(theano.config.floatX))
 
     def modelSaver(self, folder):  # In cPickle format in txt file
         f = file(folder, "wb")
@@ -521,16 +512,21 @@ class TheanoNNclass(object):
         return self
 
     def weightsVisualizer(self, folder, size=(100, 100),
-                          color="L"):  # For now only for first layer. Second in test mode
-        # gradArray -> [w0, b0, w1, b1, ...]
-        W1 = self.gradArray[0].get_value()
-        W2 = self.gradArray[2].get_value()  # Second layer test. Weighted linear combination of the first layer bases
+                          color="L", second=False):  # For now only for first layer. Second in test mode
+        # gradArray -> [w0, b0, w1, b1, ...] RANDOM!11
+        W = []
+        for i in xrange(self.lastArrayNum):  # Possible use len(self.varArrayB) or len(self.varArrayW) instead
+            W.append(self.varWeights[i]['w'])
+        # print len(W), W[0].get_value().shape, W[1].get_value().shape DONT CLEAR THIS PLZ
+        W1 = W[0].get_value()
+        W2 = W[1].get_value()  # Second layer test. Weighted linear combination of the first layer bases
         for w in xrange(len(W1)):
             img = W1[w, :].reshape(size[0], size[1])  # Fix to auto get size TODO
             Graphic.PicSaver(img, folder, "L1_" + str(w), color)
-        for w in xrange(len(W2)):
-            img = np.dot(W1.T, W2[w, :]).reshape(size[0], size[1])
-            Graphic.PicSaver(img, folder, "L2_" + str(w), color)
+        if second:
+            for w in xrange(len(W2)):
+                img = np.dot(W1.T, W2[w, :]).reshape(size[0], size[1])
+                Graphic.PicSaver(img, folder, "L2_" + str(w), color)
         return self
 
 
@@ -556,8 +552,8 @@ class NNsupport(object):
         fig.savefig(folder)
 
 
-        #---------------------------------------------------------------------#
-        # Can this really be the end? Back to work you go again
-        #---------------------------------------------------------------------#
-        #---------------------------------------------------------------------#
-        #---------------------------------------------------------------------#
+#---------------------------------------------------------------------#
+# Can this really be the end? Back to work you go again
+#---------------------------------------------------------------------#
+#---------------------------------------------------------------------#
+#---------------------------------------------------------------------#
