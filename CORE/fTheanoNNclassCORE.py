@@ -490,8 +490,8 @@ class TheanoNNclass(object):
     def paramSetter(self, array):  # Setups loaded model parameters
         for i in xrange(self.lastArrayNum):  # Possible use len(self.varArrayB) or len(self.varArrayW) instead
             variable = self.architecture[i].dropout if self.architecture[i].dropout else 1.0
-            self.varWeights[i]['w'].set_value((array[i + 1 * i] / variable).astype(theano.config.floatX))
-            self.varWeights[i]['b'].set_value((array[i + 1 * i + 1]).astype(theano.config.floatX))
+            self.varWeights[i]['w'].set_value((array[2 * i] / variable).astype(theano.config.floatX))
+            self.varWeights[i]['b'].set_value((array[2 * i + 1]).astype(theano.config.floatX))
 
     def modelSaver(self, folder):  # In cPickle format in txt file
         f = file(folder, "wb")
