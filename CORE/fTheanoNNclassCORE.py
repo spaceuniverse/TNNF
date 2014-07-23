@@ -482,32 +482,40 @@ class TheanoNNclass(object):
     def paramGetter(self):  # Returns the values of model parameters such as [w1, b1, w2, b2] ect.
         model = []
         for i in xrange(self.lastArrayNum):  # Possible use len(self.varArrayB) or len(self.varArrayW) instead
+            D = dict()
             variable = self.architecture[i].dropout if self.architecture[i].dropout else 1.0
-            model.append(self.varWeights[i]['w'].get_value() * variable)
-            model.append(self.varWeights[i]['b'].get_value())
+            for k in self.varWeights[i].keys():
+                if k == 'w':
+                    D[k] = self.varWeights[i][k].get_value() * variable
+                else:
+                    D[k] = self.varWeights[i][k].get_value()
+            model.append(D)
         return model
 
-    def paramSetter(self, array):  # Setups loaded model parameters
-        for i in xrange(self.lastArrayNum):  # Possible use len(self.varArrayB) or len(self.varArrayW) instead
-            variable = self.architecture[i].dropout if self.architecture[i].dropout else 1.0
-            self.varWeights[i]['w'].set_value((array[2 * i] / variable).astype(theano.config.floatX))
-            self.varWeights[i]['b'].set_value((array[2 * i + 1]).astype(theano.config.floatX))
+    def paramSetter(self, loaded):  # Setups loaded model parameters
+        assert len(loaded) == self.lastArrayNum, 'Number of loaded and declared layers differs.'
+        count = 0
+        for l in loaded:
+            variable = self.architecture[count].dropout if self.architecture[count].dropout else 1.0
+            for k in l.keys():
+                if k == 'w':
+                    self.varWeights[count][k].set_value(l[k] / variable)
+                else:
+                    self.varWeights[count][k].set_value(l[k])
+            count += 1
 
     def modelSaver(self, folder):  # In cPickle format in txt file
         f = file(folder, "wb")
-        for obj in self.paramGetter():
-            cPickle.dump(obj, f, protocol=cPickle.HIGHEST_PROTOCOL)
+        cPickle.dump(self.paramGetter(), f, protocol=cPickle.HIGHEST_PROTOCOL)
         f.close()
         self.getStatus()
         return self
 
     def modelLoader(self, folder):  # Path to model txt file
         f = file(folder, "rb")
-        loadedObjects = []
-        for i in xrange(len(self.gradArray)):  # Array that contains w1 b1 w2 b2 etc.
-            loadedObjects.append(cPickle.load(f))
+        loadedObject = cPickle.load(f)
         f.close()  # Then we need to update W and B parameters
-        self.paramSetter(loadedObjects)
+        self.paramSetter(loadedObject)
         self.getStatus()
         return self
 
