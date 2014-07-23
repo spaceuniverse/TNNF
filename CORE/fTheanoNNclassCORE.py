@@ -342,13 +342,6 @@ class TheanoNNclass(object):
         for i in xrange(self.lastArrayNum):
             self.architecture[i].compileWeight(self, i)
 
-        # All variables to gradArray
-        # TODO - revise to be more flexible in case RNN and CNN networks
-        self.gradArray = []
-        for i in xrange(self.lastArrayNum):  # Possible use len(self.varArrayB) or len(self.varArrayW) instead
-            for k in self.varWeights[i].keys():
-                self.gradArray.append(self.varWeights[i][k])
-
         # Dropout
         self.dropOutVectors = []
         srng = RandomStreams()  # Theano random generator for dropout
@@ -422,12 +415,17 @@ class TheanoNNclass(object):
         self.outputArray.append(XENT)
 
         # Derivatives
-        self.derivativesArray = T.grad(self.cost, self.gradArray)
+        # All variables to gradArray list to show to Theano on which variables we need an gradient
+        gradArray = []
+        for i in xrange(self.lastArrayNum):
+            for k in self.varWeights[i].keys():
+                gradArray.append(self.varWeights[i][k])
+        self.derivativesArray = T.grad(self.cost, gradArray)
 
         # RMS
         if self.options.rmsProp:
             for i in xrange(len(self.derivativesArray)):
-                mmsp = theano.shared(np.tile(0.0, self.gradArray[i].get_value().shape).astype(theano.config.floatX),
+                mmsp = theano.shared(np.tile(0.0, gradArray[i].get_value().shape).astype(theano.config.floatX),
                                      name="mmsp%s" % (i + 1))  # 0.0 - 1.0 maybe
                 self.MMSprev.append(mmsp)
                 mmsn = self.options.rmsProp * mmsp + (1 - self.options.rmsProp) * self.derivativesArray[i] ** 2
@@ -441,7 +439,7 @@ class TheanoNNclass(object):
                 self.updatesArray.append((self.MMSprev[i], self.MMSnew[i]))
             else:
                 updateVar = self.options.learnStep * self.derivativesArray[i]
-            self.updatesArray.append((self.gradArray[i], self.gradArray[i] - updateVar))
+            self.updatesArray.append((gradArray[i], gradArray[i] - updateVar))
 
         self.train = theano.function(inputs=[self.x, self.y],
                                      outputs=self.outputArray,
