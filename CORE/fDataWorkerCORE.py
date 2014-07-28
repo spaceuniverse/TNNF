@@ -34,7 +34,7 @@ def rollOut(l):
 
 def noisedSinGen(number=10000, phase=0):
     # Number of points
-    time = np.linspace(-np.pi * 10, np.pi * 10, number)
+    time = np.linspace(-np.pi * 5, np.pi * 5, number)
     # y=(    sin(x - pi /2) + cos(x * 2 * pi)         ) / 10 + 0.5
     # series = (np.sin((time+phase)-np.pi/2) + np.cos((time+phase)*2.0*np.pi))/10.0+0.5
     series = np.sin(time + phase) / 2 + 0.5
