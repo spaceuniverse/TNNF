@@ -29,6 +29,62 @@ def rollOut(l):
     return res
 
 
+# ---------------------------------------------------------------------#
+"""
+Takes as input array and returns it binarized.
+arr - target array. in format (data x examples).
+base - tuple consist of:
+        integers - base for binary transformation. In other words - number of "bits"
+        'skip'   - ignores field from input
+        False    - leave field as is.
+For correct work, base tuple should describe how to handle each filed from the input:
+    len(data) == len(base)
+
+Quick example:
+resource = np.array([[3, 4, 5],
+                     [1, 1, 1],
+                     [0, 6, 1]])
+
+target = binarizer(resource, (4, 'skip', False))
+
+We get:
+resource.shape - (3, 3) - 3 input fields; 3 examples
+base = (4, 'skip', False) - first input field should be decoded in 4 bit, second - skipped, third - leave as is
+
+target.shape - (5, 3) - where 5 = 4 (bits) + 0 (skipped) + 1 (as is); 3 - number of examples
+target:
+[[ 0.  0.  0.]
+ [ 0.  1.  1.]
+ [ 1.  0.  0.]
+ [ 1.  0.  1.]
+ [ 0.  6.  1.]]
+"""
+
+
+def binarizer(arr, base):
+    assert len(base) == arr.shape[0], 'len(base) = %s is not equal to input fields %s!' % (len(base), arr.shape[0])
+
+    res = np.zeros((arr.shape[1], 1))
+
+    count = 0
+    for b in base:
+        if b == 'skip':
+            count += 1
+        elif b:
+            a = np.int64(arr[count, :]).reshape((-1, ))
+            a = 1 & (a[:, np.newaxis] / 2 ** np.arange(b - 1, -1, -1))
+            count += 1
+            res = np.concatenate((res, a), axis=1)
+        else:
+            a = np.int64(arr[count, :]).reshape((-1, 1))
+            res = np.concatenate((res, a), axis=1)
+            count += 1
+
+    res = res[:, 1:]
+
+    return res.T
+
+
 # ---------------------------------------------------------------------# DATA GENERATOR
 
 
