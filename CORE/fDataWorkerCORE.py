@@ -31,6 +31,76 @@ def rollOut(l):
 
 # ---------------------------------------------------------------------#
 """
+Takes as input array and returns its sparsed version.
+arr - target array. in format (data x examples).
+base - tuple consist of:
+        integers - base for sparse vector creation. In other words - vector length.
+                   Attention! Sparse vector is zero-based. Means, for base 3, will be created:
+                   vector: [0 0 0]
+                   indexes: 0 1 2
+                   So with base = 3 you can encode target value 0, 1 or 2
+        'skip'   - ignores field from input
+        False    - leave field as is.
+For correct work, base tuple should describe how to handle each filed from the input:
+    len(data) == len(base)
+
+Quick example:
+resource = np.array([[2, 0, 4],
+                     [1, 1, 1],
+                     [0, 6, 1])
+
+target = sparser(resource, (5, 'skip', False)))
+
+We get:
+resource.shape - (3, 3) - 3 input fields; 3 examples
+base = (5, 'skip', False) - first input field should be decoded using sparse vector with length = 5.
+                            With this we can encode values 0..4
+                          - second - skipped
+                          - third - leave as is
+
+target.shape - (6, 3) - where 6 = 5 (sparse vector length) + 0 (skipped) + 1 (as is);
+                      - where 3 - number of examples
+target:
+[[ 0.  1.  0.]
+ [ 0.  0.  0.]
+ [ 1.  0.  0.]
+ [ 0.  0.  0.]
+ [ 0.  0.  1.]
+ [ 0.  6.  1.]]
+"""
+
+
+def sparser(arr, base):
+    assert len(base) == arr.shape[0], 'len(base) = %s is not equal to input fields %s!' % (len(base), arr.shape[0])
+
+    res = np.zeros((arr.shape[1], 1))
+
+    count = 0
+    for b in base:
+        if b == 'skip':
+            count += 1
+        elif b:
+            block = np.zeros((arr.shape[1], b))
+
+            rows = xrange(arr.shape[1])
+            col = arr[count, :].reshape((-1, ))
+            assert not any(col > b - 1), 'Sparse zero-based vector length (%s) isn\'t enough to decode input value (%s).' % (b, np.max(col))
+            block[rows, col] = 1
+
+            count += 1
+            res = np.concatenate((res, block), axis=1)
+        else:
+            a = np.int64(arr[count, :]).reshape((-1, 1))
+            res = np.concatenate((res, a), axis=1)
+            count += 1
+
+    res = res[:, 1:]
+
+    return res.T
+
+
+# ---------------------------------------------------------------------#
+"""
 Takes as input array and returns it binarized.
 arr - target array. in format (data x examples).
 base - tuple consist of:
