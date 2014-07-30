@@ -19,6 +19,7 @@ CORE_refactor/
 dataset/
 test/
 api/
+mnist/
 
 #Script to run tests
 runTests.cmd
