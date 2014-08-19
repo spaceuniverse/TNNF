@@ -85,12 +85,12 @@ def sparser(arr, base):
             rows = xrange(arr.shape[1])
             col = arr[count, :].reshape((-1, ))
             assert not any(col > b - 1), 'Sparse zero-based vector length (%s) isn\'t enough to decode input value (%s).' % (b, np.max(col))
-            block[rows, col] = 1
+            block[rows, np.int64(col)] = 1
 
             count += 1
             res = np.concatenate((res, block), axis=1)
         else:
-            a = np.int64(arr[count, :]).reshape((-1, 1))
+            a = arr[count, :].reshape((-1, 1))
             res = np.concatenate((res, a), axis=1)
             count += 1
 

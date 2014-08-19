@@ -255,6 +255,11 @@ class FunctionModel(object):
         a = 1 / (1 + T.exp(-z))
         return a
 
+    @staticmethod  # FunctionModel.Sigmoid
+    def Linear(W, X, B, *args):
+        z = T.dot(W, X) + B.dimshuffle(0, 'x')
+        return z
+
     @staticmethod  # FunctionModel.Tanh
     def Tanh(W, X, B, *args):
         z = T.dot(W, X) + B
