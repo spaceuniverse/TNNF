@@ -49,13 +49,13 @@ class Graph(object):
         #plot
         for k in validDicts.keys():
             if k == 'error':
-                plot(stepsDict[k], validDicts[k], 'r,', markeredgewidth=0, label='Error')
+                plot(stepsDict[k], validDicts[k], 'r,', markeredgewidth=0, label='Error', zorder=0)
             elif k == 'cv':
-                plot(stepsDict[k], validDicts[k], 'g.', markeredgewidth=0, label='CV')
+                plot(stepsDict[k], validDicts[k], 'g.', markeredgewidth=0, label='CV', zorder=3)
             elif k == 'accuracy':
-                plot(stepsDict[k], validDicts[k], 'b.', markeredgewidth=0, label='Accuracy')
+                plot(stepsDict[k], validDicts[k], 'b.', markeredgewidth=0, label='Accuracy', zorder=2)
             else:
-                plot(stepsDict[k], validDicts[k], str(Colors[color_idx] + '.'), markeredgewidth=0, label=k)
+                plot(stepsDict[k], validDicts[k], str(Colors[color_idx] + '.'), markeredgewidth=0, label=k, zorder=1)
                 color_idx += 1
 
         #Titles
