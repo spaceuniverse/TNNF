@@ -379,10 +379,16 @@ class TheanoNNclass(object):
 
         # train
         self.train = None
+        self.trainExternal = None
 
         # predict
         self.predict = None
         self.out = None
+
+        #For external train
+        self.metadata = None
+        self.unrolledModel = None
+        self.unroll()
 
         # Predict variables
         self.data = T.matrix("data")
@@ -452,6 +458,85 @@ class TheanoNNclass(object):
                                      allow_input_downcast=True)
         return self
 
+    def trainCompileExternal(self):
+
+        # Activation
+        for i in xrange(self.lastArrayNum):
+            self.architecture[i].compileActivation(self, i)
+
+        # Sparse penalty
+        for i in xrange(self.lastArrayNum):
+            l = self.architecture[i]
+            if l.sparsity:
+                l.compileSparsity(self, i, self.options.minibatch_size)
+
+        # Weight decay penalty
+        for i in xrange(self.lastArrayNum):
+            l = self.architecture[i]
+            if l.weightDecay:
+                l.compileWeightDecayPenalty(self, i)
+
+        # Error
+        XENT = 1.0 / self.options.minibatch_size * T.sum((self.y - self.varArrayA[-1]) ** 2 * 0.5)
+        self.cost = XENT
+        for err in self.regularize:
+            self.cost += err
+
+        # Derivatives
+        # All variables to gradArray list to show to Theano on which variables we need an gradient
+        gradArray = []
+        for i in xrange(self.lastArrayNum):
+            for k in self.varWeights[i].keys():
+                gradArray.append(self.varWeights[i][k])
+        self.derivativesArray = T.grad(self.cost, gradArray)
+
+        # Update output array
+        self.outputArray.append(self.cost)
+        self.outputArray.append(XENT)
+        self.outputArray.extend(self.derivativesArray)
+
+        self.trainExternal = theano.function(inputs=[self.x, self.y],
+                                             outputs=self.outputArray,
+                                             allow_input_downcast=True)
+        return self
+
+    def trainCalcExternal(self, model, X, Y):  # Need to call trainCompile before
+
+        self.roll(model)
+        #error, ent, grads = self.trainExternal(X, Y)
+        res = self.trainExternal(X, Y)
+
+        ent = res[1]
+        error = res[0]
+        grads = res[2:]
+
+        count = 0
+        for g in grads:
+            if count == 0:
+                if len(g.shape) == 1:
+                    grad = g
+                else:
+                    grad = g.reshape((-1, ))
+            else:
+                if len(g.shape) == 1:
+                    grad = np.concatenate((grad, g))
+                else:
+                    grad = np.concatenate((grad, g.reshape((-1, ))))
+            count += 1
+
+        self.errorArray.append(ent)
+        print ent, error
+        return error, np.float64(grad)
+
+    def trainCalc(self, X, Y, iteration=10, debug=False, errorCollect=False):  # Need to call trainCompile before
+        for i in xrange(iteration):
+            error, ent = self.train(X, Y)
+            if errorCollect:
+                self.errorArray.append(ent)
+            if debug:
+                print ent, error
+        return self
+
     def trainCalc(self, X, Y, iteration=10, debug=False, errorCollect=False):  # Need to call trainCompile before
         for i in xrange(iteration):
             error, ent = self.train(X, Y)
@@ -486,12 +571,8 @@ class TheanoNNclass(object):
         model = []
         for i in xrange(self.lastArrayNum):  # Possible use len(self.varArrayB) or len(self.varArrayW) instead
             D = dict()
-            variable = self.architecture[i].dropout if self.architecture[i].dropout else 1.0
             for k in self.varWeights[i].keys():
-                if k == 'w':
-                    D[k] = self.varWeights[i][k].get_value() * variable
-                else:
-                    D[k] = self.varWeights[i][k].get_value()
+                D[k] = self.varWeights[i][k].get_value()
             model.append(D)
         return model
 
@@ -499,17 +580,22 @@ class TheanoNNclass(object):
         assert len(loaded) == self.lastArrayNum, 'Number of loaded and declared layers differs.'
         count = 0
         for l in loaded:
-            variable = self.architecture[count].dropout if self.architecture[count].dropout else 1.0
             for k in l.keys():
-                if k == 'w':
-                    self.varWeights[count][k].set_value(l[k] / variable)
-                else:
-                    self.varWeights[count][k].set_value(l[k])
+                self.varWeights[count][k].set_value(np.float32(l[k]))
             count += 1
 
     def modelSaver(self, folder):  # In cPickle format in txt file
         f = file(folder, "wb")
-        cPickle.dump(self.paramGetter(), f, protocol=cPickle.HIGHEST_PROTOCOL)
+
+        #Fix weights with dropout values
+        model = self.paramGetter()
+        for i in xrange(self.lastArrayNum):
+            if self.architecture[i].dropout:
+                for k in model[i].keys():
+                    if k != 'b':
+                        model[i][k] = model[i][k] * self.architecture[i].dropout
+
+        cPickle.dump(model, f, protocol=cPickle.HIGHEST_PROTOCOL)
         f.close()
         self.getStatus()
         return self
@@ -518,6 +604,14 @@ class TheanoNNclass(object):
         f = file(folder, "rb")
         loadedObject = cPickle.load(f)
         f.close()  # Then we need to update W and B parameters
+
+        #Fix model with declared dropout values
+        for i in xrange(self.lastArrayNum):
+            if self.architecture[i].dropout:
+                for k in loadedObject[i].keys():
+                    if k != 'b':
+                        loadedObject[i][k] = np.true_divide(loadedObject[i][k], self.architecture[i].dropout)
+
         self.paramSetter(loadedObject)
         self.getStatus()
         return self
@@ -538,6 +632,50 @@ class TheanoNNclass(object):
             for w in xrange(len(W2)):
                 img = np.dot(W1.T, W2[w, :]).reshape(size[0], size[1])
                 Graphic.PicSaver(img, folder, "L2_" + str(w), color)
+        return self
+
+    def unroll(self):
+        l = self.paramGetter()
+        meta = []
+        count = 0
+        for d in l:
+            layers_meta = dict()
+            for k in sorted(d.keys()):
+                layers_meta[k] = d[k].shape
+                if count == 0:
+                    res = d[k].reshape((-1, ))
+                else:
+                    res = np.concatenate((res, d[k].reshape((-1, ))))
+                count += 1
+            meta.append(layers_meta)
+
+        self.unrolledModel = res
+        self.metadata = meta
+
+        return self
+
+    def roll(self, a):
+        m = self.metadata
+        start = 0
+        res = []
+        for d in m:
+            layer = dict()
+            for k in sorted(d.keys()):
+                if k != 'b':
+                    r = d[k][0]
+                    c = d[k][1]
+                    end = start + r * c
+                    layer[k] = a[start:end].reshape((r, c))
+                    start = end
+                else:
+                    r = d[k][0]
+                    end = start + r
+                    layer[k] = a[start:end].reshape((r, ))
+                    start = end
+
+            res.append(layer)
+
+        self.paramSetter(res)
         return self
 
 
