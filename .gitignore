@@ -20,6 +20,7 @@ dataset/
 test/
 api/
 mnist/
+undeployed/TheanoConv/Data/
 
 #Script to run tests
 runTests.cmd
