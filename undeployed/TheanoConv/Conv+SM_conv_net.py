@@ -1,5 +1,3 @@
-__author__ = 'rhrub'
-
 ### IMPORTS ###
 from matplotlib.pylab import *
 import theano.tensor as T

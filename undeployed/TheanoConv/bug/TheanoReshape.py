@@ -1,11 +1,6 @@
-__author__ = 'rhrub'
-
-
 import theano.tensor as T
 import theano
 import numpy as np
-
-
 
 
 data = theano.shared(np.random.randn(10, 3, 7, 7).astype(theano.config.floatX), name='data')
