@@ -1,10 +1,10 @@
-### IMPORTS ###
+# ## IMPORTS ###
 from matplotlib.pylab import *
 import theano.tensor as T
 from theano.tensor.signal import downsample
 from theano.tensor.shared_randomstreams import RandomStreams
 import theano
-import time					                    # What time is it? Adven...
+import time  # What time is it? Adven...
 import random
 import h5py
 import numpy as np
@@ -20,7 +20,7 @@ from theano.sandbox.cuda.basic_ops import gpu_contiguous
 def localModelSaver(folder, model):
     f = file(folder, "wb")
     for obj in model:
-        cPickle.dump(obj, f, protocol = cPickle.HIGHEST_PROTOCOL)
+        cPickle.dump(obj, f, protocol=cPickle.HIGHEST_PROTOCOL)
     f.close()
     return
 
@@ -60,6 +60,7 @@ def localModelLoader(folder, layers):
         loadedObjects.append(cPickle.load(f))
     f.close()
     return loadedObjects
+
 #------#
 
 ### DATA ###
@@ -145,7 +146,8 @@ random = sqrt(6) / sqrt(L1 + L3)
 #Bcnn = theano.shared(kernelB.astype(theano.config.floatX), name='Bcnn')
 
 #Init with random weights for CNN
-Wcnn = theano.shared((np.random.randn(L2cnn, L1cnn) * 2 * random_cnn - random_cnn).astype(theano.config.floatX), name='Wcnn')
+Wcnn = theano.shared((np.random.randn(L2cnn, L1cnn) * 2 * random_cnn - random_cnn).astype(theano.config.floatX),
+                     name='Wcnn')
 Bcnn = theano.shared(np.tile(0.0, (L2cnn,)).astype(theano.config.floatX), name='Bcnn')
 
 #Calc shapes for reshape function on-the-fly.
@@ -176,8 +178,8 @@ if dropout:
 #res_p = T.nnet.conv2d(Xr, Wr * dropoutCnnParam, border_mode='valid')
 
 conv_op = FilterActs(partial_sum=1)
-input_shuffled = Xr.dimshuffle(1, 2, 3, 0)      # bc01 to c01b
-filters_shuffled = Wr.dimshuffle(1, 2, 3, 0)    # bc01 to c01b
+input_shuffled = Xr.dimshuffle(1, 2, 3, 0)  # bc01 to c01b
+filters_shuffled = Wr.dimshuffle(1, 2, 3, 0)  # bc01 to c01b
 contiguous_input = gpu_contiguous(input_shuffled)
 contiguous_filters = gpu_contiguous(filters_shuffled * mcnn.dimshuffle('x', 0, 1, 'x'))
 contiguous_filters_p = gpu_contiguous(filters_shuffled * dropoutCnnParam)
@@ -217,8 +219,8 @@ res = pool_op(contiguous_input)
 contiguous_input_p = gpu_contiguous(res_p)
 res_p = pool_op(contiguous_input_p)
 
-res = res.dimshuffle(3, 0, 1, 2)                # c01b to bc01
-res_p = res_p.dimshuffle(3, 0, 1, 2)            # c01b to bc01
+res = res.dimshuffle(3, 0, 1, 2)  # c01b to bc01
+res_p = res_p.dimshuffle(3, 0, 1, 2)  # c01b to bc01
 
 
 #Separate function if U want to estimate output just after pooling
@@ -240,11 +242,11 @@ print 'Model name: ' + modelName
 #------#
 
 #Standrd NN's weights init
-w1 = theano.shared((np.random.randn(L2, L1) * 2 * random - random).astype(theano.config.floatX), name = 'w1')
-b1 = theano.shared(np.tile(0.0, (L2,)).astype(theano.config.floatX), name = 'b1')
+w1 = theano.shared((np.random.randn(L2, L1) * 2 * random - random).astype(theano.config.floatX), name='w1')
+b1 = theano.shared(np.tile(0.0, (L2,)).astype(theano.config.floatX), name='b1')
 
-w2 = theano.shared((np.random.randn(L3, L2) * 2 * random - random).astype(theano.config.floatX), name = 'w2')
-b2 = theano.shared(np.tile(0.0, (L3,)).astype(theano.config.floatX), name = 'b2')
+w2 = theano.shared((np.random.randn(L3, L2) * 2 * random - random).astype(theano.config.floatX), name='w2')
+b2 = theano.shared(np.tile(0.0, (L3,)).astype(theano.config.floatX), name='b2')
 
 # --- dropout --- #
 m1 = 1
@@ -275,7 +277,6 @@ a1_p = T.nnet.sigmoid(z1_p)
 z2_p = T.dot(w2 * m2_p, a1_p) + b2.dimshuffle(0, 'x')
 z_max = T.max(z2_p, axis=0)
 a2_p = T.exp(z2_p - T.log(T.dot(T.alloc(1.0, numClasses, 1), [T.sum(T.exp(z2_p - z_max), axis=0)])) - z_max)
-
 
 XENT = 1.0 / batchSize * T.sum((Y - a2) ** 2 * 0.5)
 
@@ -336,9 +337,9 @@ train = theano.function(inputs=[X, Y],
                                  (b2_mmsp, b2_mmsn),
                                  (Wcnn_mmsp, Wcnn_mmsn),
                                  (Bcnn_mmsp, Bcnn_mmsn),
-                                 ),
-                         allow_input_downcast=True
-                        )
+                        ),
+                        allow_input_downcast=True
+)
 
 predict = theano.function(inputs=[X],
                           outputs=a2_p,
@@ -370,7 +371,6 @@ errorArray = []
 CV = DATA_CV[:CV_size, 1:]
 CV /= 256.
 
-
 CV_Y = DATA_CV[:CV_size, 0]
 labels = CV_Y
 CV_Y = rollOut(CV_Y)
@@ -396,7 +396,6 @@ for i in xrange(2000000):
     print str(i) + '\tIteration time: ' + str(stop - start)
 
     if i % CVstep == 0:
-
         P = predict(CV)
         E = 1.0 / CV_size * np.sum((CV_Y - P) ** 2 * 0.5)
 
