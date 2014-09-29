@@ -256,6 +256,12 @@ class FunctionModel(object):
         return a
 
     @staticmethod  # FunctionModel.Sigmoid
+    def ReLU(W, X, B, *args):            # E - ein. Hack for bias. You should remember nobody perfect
+        z = T.dot(W, X) + B.dimshuffle(0, 'x')
+        a = T.switch(T.gt(z, 0), z, 0)
+        return a
+
+    @staticmethod  # FunctionModel.Sigmoid
     def Linear(W, X, B, *args):
         z = T.dot(W, X) + B.dimshuffle(0, 'x')
         return z
@@ -268,7 +274,7 @@ class FunctionModel(object):
 
     @staticmethod  # FunctionModel.SoftMax
     def SoftMax(W, X, B, *args):
-        z = T.dot(W, X) + B
+        z = T.dot(W, X) + B.dimshuffle(0, 'x')
         numClasses = W.get_value().shape[0]
         # ___CLASSIC___ #
         # a = T.exp(z) / T.dot(T.alloc(1.0, numClasses, 1), [T.sum(T.exp(z), axis = 0)])
@@ -521,7 +527,9 @@ class TheanoNNclass(object):
                 if len(g.shape) == 1:
                     grad = np.concatenate((grad, g))
                 else:
-                    grad = np.concatenate((grad, g.reshape((-1, ))))
+                    r = g.shape[0]
+                    c = g.shape[1]
+                    grad = np.concatenate((grad, g.reshape((r * c, ))))
             count += 1
 
         self.errorArray.append(ent)
