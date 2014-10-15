@@ -21,18 +21,93 @@ import cPickle
 import time  # import datetime
 import matplotlib.pyplot as plt
 from fImageWorkerCORE import *
+from pylearn2.sandbox.cuda_convnet.filter_acts import FilterActs
+from pylearn2.sandbox.cuda_convnet.pool import MaxPool
+from theano.sandbox.cuda.basic_ops import gpu_contiguous
+from theano.tensor.signal import downsample
+
+
+#---------------------------------------------------------------------#
+# Activation functions
+#---------------------------------------------------------------------#
+
+
+class FunctionModel(object):
+    @staticmethod  # FunctionModel.Sigmoid
+    #def Sigmoid(W, X, B, *args):
+    def Sigmoid(z, *args):
+        #z = T.dot(W, X) + B.dimshuffle(0, 'x')
+        a = 1 / (1 + T.exp(-z))
+        return a
+
+    @staticmethod  # FunctionModel.Sigmoid
+    #def ReLU(W, X, B, *args):
+    def ReLU(z, *args):
+        #z = T.dot(W, X) + B.dimshuffle(0, 'x')
+        a = T.switch(T.gt(z, 0), z, 0)
+        return a
+
+    @staticmethod  # FunctionModel.Sigmoid
+    #def Linear(W, X, B, *args):
+    def Linear(z, *args):
+        #z = T.dot(W, X) + B.dimshuffle(0, 'x')
+        return z
+
+    @staticmethod  # FunctionModel.Tanh
+    #def Tanh(W, X, B, *args):
+    def Tanh(z, *args):
+        #z = T.dot(W, X) + B
+        a = (T.exp(z) - T.exp(-z)) / (T.exp(z) + T.exp(-z))
+        return a
+
+    @staticmethod  # FunctionModel.SoftMax
+    #def SoftMax(W, X, B, *args):
+    def SoftMax(z, *args):
+        #z = T.dot(W, X) + B.dimshuffle(0, 'x')
+        #numClasses = W.get_value().shape[0]
+        #numClasses = T.shape(W)[0]
+        numClasses = T.shape(z)[0]
+        # ___CLASSIC___ #
+        # a = T.exp(z) / T.dot(T.alloc(1.0, numClasses, 1), [T.sum(T.exp(z), axis = 0)])
+        # _____________ #
+        # Second way antinan
+        # a = T.exp(z - T.log(T.sum(T.exp(z))))
+        # a = T.exp(z - T.log(T.dot(T.alloc(1.0, numClasses, 1), [T.sum(T.exp(z), axis = 0)])))		#FIXED?
+        # ___ANTINAN___ #
+        z_max = T.max(z, axis=0)
+        a = T.exp(z - T.log(T.dot(T.alloc(1.0, numClasses, 1), [T.sum(T.exp(z - z_max), axis=0)])) - z_max)
+        # _____________ #
+        # Some hacks for fixing float32 GPU problem
+        # a = T.clip(a, float(np.finfo(np.float32).tiny), float(np.finfo(np.float32).max))
+        # a = T.clip(a, 1e-20, 1e20)
+        # http://www.velocityreviews.com/forums/t714189-max-min-smallest-float-value-on-python-2-5-a.html
+        # http://docs.scipy.org/doc/numpy/reference/generated/numpy.finfo.html
+        # Links about possible approaches to fix nan
+        # http://blog.csdn.net/xceman1997/article/details/9974569
+        # https://github.com/Theano/Theano/issues/1563
+        return a
+
+    @staticmethod  # FunctionModel.MaxOut
+    #def MaxOut(W, X, B, *args):
+    def MaxOut(z, *args):
+        #z = T.dot(W, X) + B.dimshuffle(0, 'x')
+        d = T.shape(z)
+        n_elem = args[0]
+        z = z.reshape((d[0] / n_elem, n_elem, d[1]))
+        a = T.max(z, axis=1)
+        return a
 
 
 # ---------------------------------------------------------------------#
 # Layer builders
-#---------------------------------------------------------------------#
+# ---------------------------------------------------------------------#
 
 
 class LayerNN(object):
     def __init__(self,
                  size_in=1,
                  size_out=1,
-                 activation=False,
+                 activation=FunctionModel.Sigmoid,
                  weightDecay=False,
                  sparsity=False,
                  beta=False,
@@ -97,15 +172,27 @@ class LayerNN(object):
 
     def compileActivation(self, net, layerNum):
         variable = net.x if layerNum == 0 else net.varArrayA[layerNum - 1]
-        a = self.activation(net.varWeights[layerNum]['w'],
-                            variable * (net.dropOutVectors[layerNum].dimshuffle(0, 'x') if self.dropout else 1.0),
-                            net.varWeights[layerNum]['b'], self.pool_size)
+
+        #W x X + B
+        z = T.dot(net.varWeights[layerNum]['w'], variable * (net.dropOutVectors[layerNum].dimshuffle(0, 'x') if self.dropout else 1.0)) + net.varWeights[layerNum]['b'].dimshuffle(0, 'x')
+
+        a = self.activation(z, self.pool_size)
+
+        #a = self.activation(net.varWeights[layerNum]['w'],
+        #                    variable * (net.dropOutVectors[layerNum].dimshuffle(0, 'x') if self.dropout else 1.0),
+        #                    net.varWeights[layerNum]['b'], self.pool_size)
         net.varArrayA.append(a)
 
     def compilePredictActivation(self, net, layerNum):
         variable = net.x if layerNum == 0 else net.varArrayAc[layerNum - 1]
-        a = self.activation(net.varWeights[layerNum]['w'] * (self.dropout if self.dropout else 1.0), variable,
-                            net.varWeights[layerNum]['b'], self.pool_size)
+
+        #W x X + B
+        z = T.dot(net.varWeights[layerNum]['w'] * (self.dropout if self.dropout else 1.0), variable) + net.varWeights[layerNum]['b'].dimshuffle(0, 'x')
+
+        a = self.activation(z, self.pool_size)
+
+        #a = self.activation(net.varWeights[layerNum]['w'] * (self.dropout if self.dropout else 1.0), variable,
+        #                    net.varWeights[layerNum]['b'], self.pool_size)
         net.varArrayAc.append(a)
 
     def compileWeightDecayPenalty(self, net, layerNum):
@@ -194,13 +281,23 @@ class LayerRNN(LayerNN):
                                       (net.varWeights[layerNum]['w'].T[-self.blocks:, :] * self.W_mask).astype(
                                           theano.config.floatX)).T
 
-            a = self.activation(maskedW,
-                                extX * (net.dropOutVectors[layerNum].dimshuffle(0, 'x') if self.dropout else 1.0),
-                                net.varWeights[layerNum]['b'])
+            #W x X + B
+            z = T.dot(maskedW, extX * (net.dropOutVectors[layerNum].dimshuffle(0, 'x') if self.dropout else 1.0)) + net.varWeights[layerNum]['b'].dimshuffle(0, 'x')
+
+            a = self.activation(z, self.pool_size)
+
+            #a = self.activation(maskedW,
+            #                    extX * (net.dropOutVectors[layerNum].dimshuffle(0, 'x') if self.dropout else 1.0),
+            #                    net.varWeights[layerNum]['b'])
         else:
-            a = self.activation(net.varWeights[layerNum]['w'],
-                                variable * (net.dropOutVectors[layerNum].dimshuffle(0, 'x') if self.dropout else 1.0),
-                                net.varWeights[layerNum]['b'])
+            #W x X + B
+            z = T.dot(net.varWeights[layerNum]['w'], variable * (net.dropOutVectors[layerNum].dimshuffle(0, 'x') if self.dropout else 1.0)) + net.varWeights[layerNum]['b'].dimshuffle(0, 'x')
+
+            a = self.activation(z, self.pool_size)
+
+            #a = self.activation(net.varWeights[layerNum]['w'],
+            #                    variable * (net.dropOutVectors[layerNum].dimshuffle(0, 'x') if self.dropout else 1.0),
+            #                    net.varWeights[layerNum]['b'])
 
         a = a.reshape((self.blocks, 4, net.options.minibatch_size))
 
@@ -224,13 +321,23 @@ class LayerRNN(LayerNN):
                                       (net.varWeights[layerNum]['w'].T[-self.blocks:, :] * self.W_mask).astype(
                                           theano.config.floatX)).T
 
-            a = self.activation(maskedW * (self.dropout if self.dropout else 1.0),
-                                extX,
-                                net.varWeights[layerNum]['b'])
+            #W x X + B
+            z = T.dot(maskedW * (self.dropout if self.dropout else 1.0), extX) + net.varWeights[layerNum]['b'].dimshuffle(0, 'x')
+
+            a = self.activation(z, self.pool_size)
+
+            #a = self.activation(maskedW * (self.dropout if self.dropout else 1.0),
+            #                    extX,
+            #                    net.varWeights[layerNum]['b'])
         else:
-            a = self.activation(net.varWeights[layerNum]['w'] * (self.dropout if self.dropout else 1.0),
-                                variable,
-                                net.varWeights[layerNum]['b'])
+            #W x X + B
+            z = T.dot(net.varWeights[layerNum]['w'] * (self.dropout if self.dropout else 1.0), variable) + net.varWeights[layerNum]['b'].dimshuffle(0, 'x')
+
+            a = self.activation(z, self.pool_size)
+
+            #a = self.activation(net.varWeights[layerNum]['w'] * (self.dropout if self.dropout else 1.0),
+            #                    variable,
+            #                    net.varWeights[layerNum]['b'])
 
         a = a.reshape((self.blocks, 4, net.options.CV_size))
 
@@ -243,68 +350,180 @@ class LayerRNN(LayerNN):
         net.varArrayAc.append(Po)
 
 
-#---------------------------------------------------------------------#
-# Activation functions
-#---------------------------------------------------------------------#
+class LayerCNN(LayerNN):
+    def __init__(self, kernel_shape=None, stride=1, pooling=False, pooling_shape=None, optimized=False, **kwargs):
+
+        super(LayerCNN, self).__init__(**kwargs)
+
+        self.kernel_shape = kernel_shape        # (number of kernels, colors, shape[0], shape[1])
+        self.stride = stride                    # stride for convolution
+        self.pooling = pooling                  # whether we want to use pooling at all
+        self.pooling_shape = pooling_shape      # stride for pooling
+        self.optimized = optimized
 
 
-class FunctionModel(object):
-    @staticmethod  # FunctionModel.Sigmoid
-    def Sigmoid(W, X, B, *args):
-        z = T.dot(W, X) + B.dimshuffle(0, 'x')
-        a = 1 / (1 + T.exp(-z))
-        return a
+    def compileWeight(self, net, layerNum):
+        random = sqrt(6) / sqrt(net.architecture[0].size_in + net.architecture[-1].size_out)
+        W = dict()
 
-    @staticmethod  # FunctionModel.Sigmoid
-    def ReLU(W, X, B, *args):            # E - ein. Hack for bias. You should remember nobody perfect
-        z = T.dot(W, X) + B.dimshuffle(0, 'x')
-        a = T.switch(T.gt(z, 0), z, 0)
-        return a
+        #MAXOUT will be implemented later
+        if self.activation == FunctionModel.MaxOut:
+            raise NotImplementedError('MaxOut activation function for Convolution nets is not implemented yet!')
 
-    @staticmethod  # FunctionModel.Sigmoid
-    def Linear(W, X, B, *args):
-        z = T.dot(W, X) + B.dimshuffle(0, 'x')
-        return z
+        #Random init for CNN. Without reshape. Init exact kernel shape
+        weights = np.random.standard_normal(size=self.kernel_shape)
 
-    @staticmethod  # FunctionModel.Tanh
-    def Tanh(W, X, B, *args):
-        z = T.dot(W, X) + B
-        a = (T.exp(z) - T.exp(-z)) / (T.exp(z) + T.exp(-z))
-        return a
+        #if self.activation != FunctionModel.MaxOut:
+        #    #Random init for CNN. Without reshape. Init exact kernel shape
+        #    weights = np.random.standard_normal(size=self.kernel_shape)
+        #else:
+        #    weights = np.random.standard_normal(size=(self.kernel_shape[0] * self.pool_size, self.kernel_shape[1], self.kernel_shape[2], self.kernel_shape[3]))
 
-    @staticmethod  # FunctionModel.SoftMax
-    def SoftMax(W, X, B, *args):
-        z = T.dot(W, X) + B.dimshuffle(0, 'x')
-        numClasses = W.get_value().shape[0]
-        # ___CLASSIC___ #
-        # a = T.exp(z) / T.dot(T.alloc(1.0, numClasses, 1), [T.sum(T.exp(z), axis = 0)])
-        # _____________ #
-        # Second way antinan
-        # a = T.exp(z - T.log(T.sum(T.exp(z))))
-        # a = T.exp(z - T.log(T.dot(T.alloc(1.0, numClasses, 1), [T.sum(T.exp(z), axis = 0)])))		#FIXED?
-        # ___ANTINAN___ #
-        z_max = T.max(z, axis=0)
-        a = T.exp(z - T.log(T.dot(T.alloc(1.0, numClasses, 1), [T.sum(T.exp(z - z_max), axis=0)])) - z_max)
-        # _____________ #
-        # Some hacks for fixing float32 GPU problem
-        # a = T.clip(a, float(np.finfo(np.float32).tiny), float(np.finfo(np.float32).max))
-        # a = T.clip(a, 1e-20, 1e20)
-        # http://www.velocityreviews.com/forums/t714189-max-min-smallest-float-value-on-python-2-5-a.html
-        # http://docs.scipy.org/doc/numpy/reference/generated/numpy.finfo.html
-        # Links about possible approaches to fix nan
-        # http://blog.csdn.net/xceman1997/article/details/9974569
-        # https://github.com/Theano/Theano/issues/1563
-        return a
+        #weights rescale
+        weights_min = np.min(weights)
+        weights = weights - weights_min
+        weights_max = np.max(weights)
+        weights = weights / weights_max
 
-    @staticmethod  # FunctionModel.MaxOut
-    def MaxOut(W, X, B, *args):
-        z = T.dot(W, X) + B.dimshuffle(0, 'x')
-        d = T.shape(z)
-        n_elem = args[0]
-        z = z.reshape((d[0] / n_elem, n_elem, d[1]))
-        a = T.max(z, axis=1)
-        return a
+        w = theano.shared((weights * 2 * random - random).astype(theano.config.floatX), name="w%s" % (layerNum + 1))
 
+        W['w'] = w
+
+        #Bias shape == number of kernels
+        b = theano.shared(np.tile(0.0, (self.kernel_shape[0],)).astype(theano.config.floatX), name="b%s" % (layerNum + 1))
+
+        W['b'] = b
+        net.varWeights.append(W)
+
+    def compileDropout(self, net, R):
+        #Assume we work only with square kernels
+        if self.dropout:
+            net.dropOutVectors.append(R.binomial(p=self.dropout, size=(self.kernel_shape[-2], self.kernel_shape[-1]))
+                                      .astype(theano.config.floatX))
+        else:
+            net.dropOutVectors.append(1.0)
+
+    def compileSparsity(self, net, layerNum, num):
+        a = net.varArrayA[layerNum]
+        out_size = T.cast(T.sqrt(T.shape(a)[0] / self.kernel_shape[0]), 'int16')
+        a = T.reshape(a, (net.options.minibatch_size, self.kernel_shape[0], out_size, out_size))
+        #sprs = T.mean(a, axis=(1, 2, 3))
+        sprs = T.mean(a, axis=1)
+        epsilon = 1e-20
+        sprs = T.clip(sprs, epsilon, 1 - epsilon)
+        KL = T.sum(self.sparsity * T.log(self.sparsity / sprs) + (1 - self.sparsity) * T.log((1 - self.sparsity) / (1 - sprs))) / (out_size * out_size)
+        net.regularize.append(self.beta * KL)
+
+    def compileActivation(self, net, layerNum):
+        variable = net.x if layerNum == 0 else net.varArrayA[layerNum - 1]
+
+        #Calc shapes for reshape function on-the-fly. Assume we have square images as input.
+        sX = T.cast(T.sqrt(T.shape(variable)[0]), 'int16')
+
+        #Converts input from 2 to 4 dimensions
+        Xr = T.reshape(variable.T, (T.shape(variable)[1], self.kernel_shape[1], sX, sX))
+
+        if self.optimized:
+            out_size = T.floor((T.shape(Xr)[-1] - T.shape(net.varWeights[layerNum]['w'])[-1] + 1) / self.stride)
+
+            conv_op = FilterActs(stride=self.stride)
+            input_shuffled = Xr.dimshuffle(1, 2, 3, 0)  # bc01 to c01b
+            filters_shuffled = net.varWeights[layerNum]['w'].dimshuffle(1, 2, 3, 0)  # bc01 to c01b
+            filters_flipped = filters_shuffled[:, ::-1, ::-1, :] # flip rows and columns
+            contiguous_input = gpu_contiguous(input_shuffled)
+            contiguous_filters = gpu_contiguous(filters_flipped *
+                                                (net.dropOutVectors[layerNum].dimshuffle('x', 0, 1, 'x') if self.dropout else 1.0))
+            a = conv_op(contiguous_input, contiguous_filters)
+            a = a[:, :out_size, :out_size, :]
+            #Add bias
+            a = a + net.varWeights[layerNum]['b'].dimshuffle(0, 'x', 'x', 'x')
+        else:
+            a = T.nnet.conv2d(Xr, net.varWeights[layerNum]['w'] *
+                              (net.dropOutVectors[layerNum].dimshuffle('x', 'x', 0, 1) if self.dropout else 1.0),
+                              border_mode='valid',
+                              subsample=(self.stride, self.stride))
+            #Add bias
+            a = a + net.varWeights[layerNum]['b'].dimshuffle('x', 0, 'x', 'x')
+
+        if self.pooling:
+            if self.optimized:
+                #Pooling
+                # ds - side of square pool window
+                # stride - Defines the stride size between successive pooling squares.
+                # Setting this parameter smaller than sizeX produces overlapping pools.
+                # Setting it equal to sizeX gives the usual, non-overlapping pools. Values greater than sizeX are not allowed.
+                pool_op = MaxPool(ds=self.pooling_shape, stride=self.pooling_shape)
+
+                contiguous_input = gpu_contiguous(a)
+                a = pool_op(contiguous_input)
+                a = a.dimshuffle(3, 0, 1, 2)       # c01b to bc01
+            else:
+                a = downsample.max_pool_2d(a, (self.pooling_shape, self.pooling_shape), ignore_border=False)
+        else:
+            if self.optimized:
+                a = a.dimshuffle(3, 0, 1, 2)       # c01b to bc01
+
+        a = T.flatten(a, outdim=2).T
+
+        #Sigmoid
+        a = self.activation(a, self.pool_size)
+
+        net.varArrayA.append(a)
+
+    def compilePredictActivation(self, net, layerNum):
+        variable = net.x if layerNum == 0 else net.varArrayAc[layerNum - 1]
+
+        #Calc shapes for reshape function on-the-fly. Assume we have square images as input.
+        sX = T.cast(T.sqrt(T.shape(variable)[0]), 'int16')
+
+        #Converts input from 2 to 4 dimensions
+        Xr = T.reshape(variable.T, (T.shape(variable)[1], self.kernel_shape[1], sX, sX))
+
+        if self.optimized:
+            out_size = T.floor((T.shape(Xr)[-1] - T.shape(net.varWeights[layerNum]['w'])[-1] + 1) / self.stride)
+
+            conv_op = FilterActs(stride=self.stride)
+            input_shuffled = Xr.dimshuffle(1, 2, 3, 0)  # bc01 to c01b
+            filters_shuffled = net.varWeights[layerNum]['w'].dimshuffle(1, 2, 3, 0)  # bc01 to c01b
+            filters_flipped = filters_shuffled[:, ::-1, ::-1, :]    # flip rows and columns
+            contiguous_input = gpu_contiguous(input_shuffled)
+            contiguous_filters = gpu_contiguous(filters_flipped * (self.dropout if self.dropout else 1.0))
+            a = conv_op(contiguous_input, contiguous_filters)
+            a = a[:, :out_size, :out_size, :]
+            #Add bias
+            a = a + net.varWeights[layerNum]['b'].dimshuffle(0, 'x', 'x', 'x')
+        else:
+            a = T.nnet.conv2d(Xr, net.varWeights[layerNum]['w'] *
+                              (net.dropOutVectors[layerNum].dimshuffle('x', 'x', 0, 1) if self.dropout else 1.0),
+                              border_mode='valid',
+                              subsample=(self.stride, self.stride))
+
+            #Add bias
+            a = a + net.varWeights[layerNum]['b'].dimshuffle('x', 0, 'x', 'x')
+
+        if self.pooling:
+            if self.optimized:
+                #Pooling
+                # ds - side of square pool window
+                # stride - Defines the stride size between successive pooling squares.
+                # Setting this parameter smaller than sizeX produces overlapping pools.
+                # Setting it equal to sizeX gives the usual, non-overlapping pools. Values greater than sizeX are not allowed.
+                pool_op = MaxPool(ds=self.pooling_shape, stride=self.pooling_shape)
+                contiguous_input = gpu_contiguous(a.astype(theano.config.floatX))
+                a = pool_op(contiguous_input)
+                a = a.dimshuffle(3, 0, 1, 2)       # c01b to bc01
+            else:
+                a = downsample.max_pool_2d(a, (self.pooling_shape, self.pooling_shape), ignore_border=False)
+        else:
+            if self.optimized:
+                a = a.dimshuffle(3, 0, 1, 2)       # c01b to bc01
+
+        a = T.flatten(a, outdim=2).T
+
+        #Sigmoid
+        a = self.activation(a, self.pool_size)
+
+        net.varArrayAc.append(a)
 
 #---------------------------------------------------------------------#
 # Options instance
@@ -545,15 +764,6 @@ class TheanoNNclass(object):
                 print ent, error
         return self
 
-    def trainCalc(self, X, Y, iteration=10, debug=False, errorCollect=False):  # Need to call trainCompile before
-        for i in xrange(iteration):
-            error, ent = self.train(X, Y)
-            if errorCollect:
-                self.errorArray.append(ent)
-            if debug:
-                print ent, error
-        return self
-
     def predictCompile(self):
         # Predict activation
         for i in xrange(self.lastArrayNum):
@@ -709,8 +919,8 @@ class NNsupport(object):
         fig.savefig(folder)
 
 
-#---------------------------------------------------------------------#
-# Can this really be the end? Back to work you go again
-#---------------------------------------------------------------------#
-#---------------------------------------------------------------------#
-#---------------------------------------------------------------------#
+        #---------------------------------------------------------------------#
+        # Can this really be the end? Back to work you go again
+        #---------------------------------------------------------------------#
+        #---------------------------------------------------------------------#
+        #---------------------------------------------------------------------#

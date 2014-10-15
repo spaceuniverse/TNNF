@@ -66,7 +66,7 @@ kernelW = kernelW[0]
 #valid numbers of input channels are 1, 2, 3, 4, 8, 12, 16...
 #Convolution part architecture. L1cnn = 36 and L2cnn = 25 - means we use 6x6 window and it results in 25-length vector
 L1cnn = 49
-L2cnn = 32
+L2cnn = 16
 
 
 X = T.matrix('X')
@@ -84,9 +84,12 @@ sW = T.cast(T.sqrt(T.shape(Wcnn)[1]), 'int16')
 Wr = T.reshape(Wcnn, (T.shape(Wcnn)[0], 1, sW, sW))
 
 #Convolve
-#res = T.nnet.conv2d(Xr, Wr, border_mode='valid')
+#res = T.nnet.conv2d(Xr, Wr, border_mode='valid', subsample=(2, 2))
+#res = T.nnet.conv2d(Xr, Wr, border_mode='full')
 
-conv_op = FilterActs(partial_sum=1)
+size = T.floor((T.shape(Xr)[-1] - T.shape(Wr)[-1] + 1) / 2)
+
+conv_op = FilterActs(stride=1)
 input_shuffled = Xr.dimshuffle(1, 2, 3, 0)      # bc01 to c01b
 filters_shuffled = Wr.dimshuffle(1, 2, 3, 0)    # bc01 to c01b
 contiguous_input = gpu_contiguous(input_shuffled)
@@ -94,24 +97,26 @@ contiguous_filters = gpu_contiguous(filters_shuffled)
 res = conv_op(contiguous_input, contiguous_filters)
 res = res.dimshuffle(3, 0, 1, 2)       # c01b to bc01
 
-
+res = res[:, :, :size, :size]
 
 #Add bias
-#res = res + Bcnn.reshape((T.shape(Bcnn)[0],)).dimshuffle('x', 0, 'x', 'x')
-res = res + Bcnn.reshape((T.shape(Bcnn)[0],)).dimshuffle(0, 'x', 'x', 'x')
+#res = res + Bcnn.dimshuffle('x', 0, 'x', 'x')
+#res = res + Bcnn.reshape((T.shape(Bcnn)[0],)).dimshuffle(0, 'x', 'x', 'x')
 
 #Sigmoid
-res = 1 / (1 + T.exp(-res))
+#res = 1 / (1 + T.exp(-res))
 
 #Pooling
-pool_shape = (3, 3)
-res = downsample.max_pool_2d(res, pool_shape, ignore_border=True)
+#pool_shape = (2, 2)
+#res = downsample.max_pool_2d(res, pool_shape, ignore_border=True)
 
-w1 = theano.shared(np.zeros((400, 128)).astype(theano.config.floatX), name='w1')
+#w1 = theano.shared(np.zeros((400, 128)).astype(theano.config.floatX), name='w1')
 
-nShape = T.shape(res)[1] * T.shape(res)[2] * T.shape(res)[3]
+#nShape = T.shape(res)[1] * T.shape(res)[2] * T.shape(res)[3]
 
-res = T.dot(w1, res.reshape((T.shape(X)[0], nShape)))
+#res = T.dot(w1, res.reshape((T.shape(X)[0], nShape)))
+
+#res = T.flatten(res, outdim=2)
 
 
 cnn = theano.function(inputs=[X],
