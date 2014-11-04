@@ -48,6 +48,13 @@ class FunctionModel(object):
         return a
 
     @staticmethod  # FunctionModel.Sigmoid
+    #def ReLU(W, X, B, *args):
+    def LReLU(z, *args):
+        #z = T.dot(W, X) + B.dimshuffle(0, 'x')
+        a = T.switch(T.gt(z, 0), z, z * 0.01)
+        return a
+
+    @staticmethod  # FunctionModel.Sigmoid
     #def Linear(W, X, B, *args):
     def Linear(z, *args):
         #z = T.dot(W, X) + B.dimshuffle(0, 'x')
@@ -363,7 +370,8 @@ class LayerCNN(LayerNN):
 
 
     def compileWeight(self, net, layerNum):
-        random = sqrt(6) / sqrt(net.architecture[0].size_in + net.architecture[-1].size_out)
+        #random = sqrt(6) / sqrt(net.architecture[0].size_in + net.architecture[-1].size_out)
+        random = sqrt(6) / sqrt(self.kernel_shape[-1] * self.kernel_shape[-2] * self.kernel_shape[0])
         W = dict()
 
         #MAXOUT will be implemented later
@@ -418,7 +426,7 @@ class LayerCNN(LayerNN):
         variable = net.x if layerNum == 0 else net.varArrayA[layerNum - 1]
 
         #Calc shapes for reshape function on-the-fly. Assume we have square images as input.
-        sX = T.cast(T.sqrt(T.shape(variable)[0]), 'int16')
+        sX = T.cast(T.sqrt(T.shape(variable)[0] / self.kernel_shape[1]), 'int16')
 
         #Converts input from 2 to 4 dimensions
         Xr = T.reshape(variable.T, (T.shape(variable)[1], self.kernel_shape[1], sX, sX))
@@ -474,7 +482,7 @@ class LayerCNN(LayerNN):
         variable = net.x if layerNum == 0 else net.varArrayAc[layerNum - 1]
 
         #Calc shapes for reshape function on-the-fly. Assume we have square images as input.
-        sX = T.cast(T.sqrt(T.shape(variable)[0]), 'int16')
+        sX = T.cast(T.sqrt(T.shape(variable)[0] / self.kernel_shape[1]), 'int32')
 
         #Converts input from 2 to 4 dimensions
         Xr = T.reshape(variable.T, (T.shape(variable)[1], self.kernel_shape[1], sX, sX))
