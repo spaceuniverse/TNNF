@@ -370,7 +370,6 @@ class LayerCNN(LayerNN):
 
 
     def compileWeight(self, net, layerNum):
-        #random = sqrt(6) / sqrt(net.architecture[0].size_in + net.architecture[-1].size_out)
         random = sqrt(6) / sqrt(self.kernel_shape[-1] * self.kernel_shape[-2] * self.kernel_shape[0])
         W = dict()
 
@@ -432,7 +431,9 @@ class LayerCNN(LayerNN):
         Xr = T.reshape(variable.T, (T.shape(variable)[1], self.kernel_shape[1], sX, sX))
 
         if self.optimized:
-            out_size = T.floor((T.shape(Xr)[-1] - T.shape(net.varWeights[layerNum]['w'])[-1] + 1) / self.stride)
+            out_size = T.cast(
+                T.ceil((T.shape(Xr)[-1] - T.shape(net.varWeights[layerNum]['w'])[-1] + 1) / np.float32(self.stride)),
+                'int32')
 
             conv_op = FilterActs(stride=self.stride)
             input_shuffled = Xr.dimshuffle(1, 2, 3, 0)  # bc01 to c01b
@@ -488,7 +489,9 @@ class LayerCNN(LayerNN):
         Xr = T.reshape(variable.T, (T.shape(variable)[1], self.kernel_shape[1], sX, sX))
 
         if self.optimized:
-            out_size = T.floor((T.shape(Xr)[-1] - T.shape(net.varWeights[layerNum]['w'])[-1] + 1) / self.stride)
+            out_size = T.cast(
+                T.ceil((T.shape(Xr)[-1] - T.shape(net.varWeights[layerNum]['w'])[-1] + 1) / np.float32(self.stride)),
+                'int32')
 
             conv_op = FilterActs(stride=self.stride)
             input_shuffled = Xr.dimshuffle(1, 2, 3, 0)  # bc01 to c01b
@@ -786,7 +789,7 @@ class TheanoNNclass(object):
     def predictCalc(self, X, debug=True):  # Need to call predictCompile before
         self.out = self.predict(X)  # Matrix of outputs. Each column is a picture reshaped in vector of features
         if debug:
-            print self.out.shape
+            print 'out.shape:', self.out.shape
         return self
 
     def getStatus(self):  # Its time for troubles
