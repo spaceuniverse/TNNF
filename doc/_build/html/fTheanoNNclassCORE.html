@@ -1,0 +1,398 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>fTheanoNNclassCORE module &mdash; TNNF 2.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="TNNF 2.0 documentation" href="index.html" />
+    <link rel="next" title="fImageWorkerCORE module" href="fImageWorkerCORE.html" />
+    <link rel="prev" title="Welcome to TNNF’s documentation!" href="index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="fImageWorkerCORE.html" title="fImageWorkerCORE module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to TNNF’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">TNNF 2.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-fTheanoNNclassCORE">
+<span id="ftheanonnclasscore-module"></span><h1>fTheanoNNclassCORE module<a class="headerlink" href="#module-fTheanoNNclassCORE" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="fTheanoNNclassCORE.FunctionModel">
+<em class="property">class </em><code class="descclassname">fTheanoNNclassCORE.</code><code class="descname">FunctionModel</code><a class="headerlink" href="#fTheanoNNclassCORE.FunctionModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Collection of activation functions we support.</p>
+<dl class="staticmethod">
+<dt id="fTheanoNNclassCORE.FunctionModel.LReLU">
+<em class="property">static </em><code class="descname">LReLU</code><span class="sig-paren">(</span><em>z</em>, <em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.FunctionModel.LReLU" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="fTheanoNNclassCORE.FunctionModel.Linear">
+<em class="property">static </em><code class="descname">Linear</code><span class="sig-paren">(</span><em>z</em>, <em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.FunctionModel.Linear" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="fTheanoNNclassCORE.FunctionModel.MaxOut">
+<em class="property">static </em><code class="descname">MaxOut</code><span class="sig-paren">(</span><em>z</em>, <em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.FunctionModel.MaxOut" title="Permalink to this definition">¶</a></dt>
+<dd><p>MaxOut activation function</p>
+<p><a class="reference external" href="http://arxiv.org/pdf/1302.4389.pdf">http://arxiv.org/pdf/1302.4389.pdf</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>z</strong> &#8211; input array</li>
+<li><strong>args</strong> &#8211; [0] - the number of &#8220;lines&#8221; to emulate MaxOut in each pool</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">array with value based on MaxOut</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="fTheanoNNclassCORE.FunctionModel.ReLU">
+<em class="property">static </em><code class="descname">ReLU</code><span class="sig-paren">(</span><em>z</em>, <em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.FunctionModel.ReLU" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="fTheanoNNclassCORE.FunctionModel.Sigmoid">
+<em class="property">static </em><code class="descname">Sigmoid</code><span class="sig-paren">(</span><em>z</em>, <em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.FunctionModel.Sigmoid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="fTheanoNNclassCORE.FunctionModel.SoftMax">
+<em class="property">static </em><code class="descname">SoftMax</code><span class="sig-paren">(</span><em>z</em>, <em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.FunctionModel.SoftMax" title="Permalink to this definition">¶</a></dt>
+<dd><p>SoftMax activation function with several updates to avoid NaN.</p>
+<p>It is useful for output layer only.</p>
+<p>Some hacks for fixing float32 GPU problem
+a = T.clip(a, float(np.finfo(np.float32).tiny), float(np.finfo(np.float32).max))
+a = T.clip(a, 1e-20, 1e20)
+<a class="reference external" href="http://www.velocityreviews.com/forums/t714189-max-min-smallest-float-value-on-python-2-5-a.html">http://www.velocityreviews.com/forums/t714189-max-min-smallest-float-value-on-python-2-5-a.html</a>
+<a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.finfo.html">http://docs.scipy.org/doc/numpy/reference/generated/numpy.finfo.html</a>
+Links about possible approaches to fix nan
+<a class="reference external" href="http://blog.csdn.net/xceman1997/article/details/9974569">http://blog.csdn.net/xceman1997/article/details/9974569</a>
+<a class="reference external" href="https://github.com/Theano/Theano/issues/1563">https://github.com/Theano/Theano/issues/1563</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>z</strong> &#8211; input data (regardless of its size) that will be used for calculations</li>
+<li><strong>args</strong> &#8211; for now used only for MaxOut activation function</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">array with the same size as &#8216;z&#8217; and values recalculated according to</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="fTheanoNNclassCORE.FunctionModel.Tanh">
+<em class="property">static </em><code class="descname">Tanh</code><span class="sig-paren">(</span><em>z</em>, <em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.FunctionModel.Tanh" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fTheanoNNclassCORE.LayerCNN">
+<em class="property">class </em><code class="descclassname">fTheanoNNclassCORE.</code><code class="descname">LayerCNN</code><span class="sig-paren">(</span><em>kernel_shape=None</em>, <em>stride=1</em>, <em>pooling=False</em>, <em>pooling_shape=None</em>, <em>optimized=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.LayerCNN" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fTheanoNNclassCORE.LayerNN" title="fTheanoNNclassCORE.LayerNN"><code class="xref py py-class docutils literal"><span class="pre">fTheanoNNclassCORE.LayerNN</span></code></a></p>
+<dl class="method">
+<dt id="fTheanoNNclassCORE.LayerCNN.compileActivation">
+<code class="descname">compileActivation</code><span class="sig-paren">(</span><em>net</em>, <em>layerNum</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.LayerCNN.compileActivation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fTheanoNNclassCORE.LayerCNN.compileDropout">
+<code class="descname">compileDropout</code><span class="sig-paren">(</span><em>net</em>, <em>R</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.LayerCNN.compileDropout" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fTheanoNNclassCORE.LayerCNN.compilePredictActivation">
+<code class="descname">compilePredictActivation</code><span class="sig-paren">(</span><em>net</em>, <em>layerNum</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.LayerCNN.compilePredictActivation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fTheanoNNclassCORE.LayerCNN.compileSparsity">
+<code class="descname">compileSparsity</code><span class="sig-paren">(</span><em>net</em>, <em>layerNum</em>, <em>num</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.LayerCNN.compileSparsity" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fTheanoNNclassCORE.LayerCNN.compileWeight">
+<code class="descname">compileWeight</code><span class="sig-paren">(</span><em>net</em>, <em>layerNum</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.LayerCNN.compileWeight" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fTheanoNNclassCORE.LayerNN">
+<em class="property">class </em><code class="descclassname">fTheanoNNclassCORE.</code><code class="descname">LayerNN</code><span class="sig-paren">(</span><em>size_in=1</em>, <em>size_out=1</em>, <em>activation=&lt;function Sigmoid at 0x5130140&gt;</em>, <em>weightDecay=False</em>, <em>sparsity=False</em>, <em>beta=False</em>, <em>dropout=False</em>, <em>dropConnect=False</em>, <em>pool_size=False</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.LayerNN" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="fTheanoNNclassCORE.LayerNN.Printer">
+<code class="descname">Printer</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.LayerNN.Printer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fTheanoNNclassCORE.LayerNN.compileActivation">
+<code class="descname">compileActivation</code><span class="sig-paren">(</span><em>net</em>, <em>layerNum</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.LayerNN.compileActivation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fTheanoNNclassCORE.LayerNN.compileDropout">
+<code class="descname">compileDropout</code><span class="sig-paren">(</span><em>net</em>, <em>R</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.LayerNN.compileDropout" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fTheanoNNclassCORE.LayerNN.compilePredictActivation">
+<code class="descname">compilePredictActivation</code><span class="sig-paren">(</span><em>net</em>, <em>layerNum</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.LayerNN.compilePredictActivation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fTheanoNNclassCORE.LayerNN.compileSparsity">
+<code class="descname">compileSparsity</code><span class="sig-paren">(</span><em>net</em>, <em>layerNum</em>, <em>num</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.LayerNN.compileSparsity" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fTheanoNNclassCORE.LayerNN.compileWeight">
+<code class="descname">compileWeight</code><span class="sig-paren">(</span><em>net</em>, <em>layerNum</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.LayerNN.compileWeight" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fTheanoNNclassCORE.LayerNN.compileWeightDecayPenalty">
+<code class="descname">compileWeightDecayPenalty</code><span class="sig-paren">(</span><em>net</em>, <em>layerNum</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.LayerNN.compileWeightDecayPenalty" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fTheanoNNclassCORE.LayerRNN">
+<em class="property">class </em><code class="descclassname">fTheanoNNclassCORE.</code><code class="descname">LayerRNN</code><span class="sig-paren">(</span><em>blocks=1</em>, <em>peeholes=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.LayerRNN" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fTheanoNNclassCORE.LayerNN" title="fTheanoNNclassCORE.LayerNN"><code class="xref py py-class docutils literal"><span class="pre">fTheanoNNclassCORE.LayerNN</span></code></a></p>
+<dl class="method">
+<dt id="fTheanoNNclassCORE.LayerRNN.compileActivation">
+<code class="descname">compileActivation</code><span class="sig-paren">(</span><em>net</em>, <em>layerNum</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.LayerRNN.compileActivation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fTheanoNNclassCORE.LayerRNN.compilePredictActivation">
+<code class="descname">compilePredictActivation</code><span class="sig-paren">(</span><em>net</em>, <em>layerNum</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.LayerRNN.compilePredictActivation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fTheanoNNclassCORE.LayerRNN.compileWeight">
+<code class="descname">compileWeight</code><span class="sig-paren">(</span><em>net</em>, <em>layerNum</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.LayerRNN.compileWeight" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fTheanoNNclassCORE.NNsupport">
+<em class="property">class </em><code class="descclassname">fTheanoNNclassCORE.</code><code class="descname">NNsupport</code><a class="headerlink" href="#fTheanoNNclassCORE.NNsupport" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="staticmethod">
+<dt id="fTheanoNNclassCORE.NNsupport.crossV">
+<em class="property">static </em><code class="descname">crossV</code><span class="sig-paren">(</span><em>number</em>, <em>y</em>, <em>x</em>, <em>modelObj</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.NNsupport.crossV" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="fTheanoNNclassCORE.NNsupport.errorG">
+<em class="property">static </em><code class="descname">errorG</code><span class="sig-paren">(</span><em>errorArray</em>, <em>folder</em>, <em>plotsize=50</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.NNsupport.errorG" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fTheanoNNclassCORE.OptionsStore">
+<em class="property">class </em><code class="descclassname">fTheanoNNclassCORE.</code><code class="descname">OptionsStore</code><span class="sig-paren">(</span><em>learnStep=0.01</em>, <em>rmsProp=False</em>, <em>mmsmin=1e-10</em>, <em>rProp=False</em>, <em>minibatch_size=1</em>, <em>CV_size=1</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.OptionsStore" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="fTheanoNNclassCORE.OptionsStore.Printer">
+<code class="descname">Printer</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.OptionsStore.Printer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fTheanoNNclassCORE.TheanoNNclass">
+<em class="property">class </em><code class="descclassname">fTheanoNNclassCORE.</code><code class="descname">TheanoNNclass</code><span class="sig-paren">(</span><em>opt</em>, <em>architecture</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.TheanoNNclass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="fTheanoNNclassCORE.TheanoNNclass.getStatus">
+<code class="descname">getStatus</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.TheanoNNclass.getStatus" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fTheanoNNclassCORE.TheanoNNclass.modelLoader">
+<code class="descname">modelLoader</code><span class="sig-paren">(</span><em>folder</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.TheanoNNclass.modelLoader" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fTheanoNNclassCORE.TheanoNNclass.modelSaver">
+<code class="descname">modelSaver</code><span class="sig-paren">(</span><em>folder</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.TheanoNNclass.modelSaver" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fTheanoNNclassCORE.TheanoNNclass.paramGetter">
+<code class="descname">paramGetter</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.TheanoNNclass.paramGetter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fTheanoNNclassCORE.TheanoNNclass.paramSetter">
+<code class="descname">paramSetter</code><span class="sig-paren">(</span><em>loaded</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.TheanoNNclass.paramSetter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fTheanoNNclassCORE.TheanoNNclass.predictCalc">
+<code class="descname">predictCalc</code><span class="sig-paren">(</span><em>X</em>, <em>debug=True</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.TheanoNNclass.predictCalc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fTheanoNNclassCORE.TheanoNNclass.predictCompile">
+<code class="descname">predictCompile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.TheanoNNclass.predictCompile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fTheanoNNclassCORE.TheanoNNclass.roll">
+<code class="descname">roll</code><span class="sig-paren">(</span><em>a</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.TheanoNNclass.roll" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fTheanoNNclassCORE.TheanoNNclass.trainCalc">
+<code class="descname">trainCalc</code><span class="sig-paren">(</span><em>X</em>, <em>Y</em>, <em>iteration=10</em>, <em>debug=False</em>, <em>errorCollect=False</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.TheanoNNclass.trainCalc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fTheanoNNclassCORE.TheanoNNclass.trainCalcExternal">
+<code class="descname">trainCalcExternal</code><span class="sig-paren">(</span><em>model</em>, <em>X</em>, <em>Y</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.TheanoNNclass.trainCalcExternal" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fTheanoNNclassCORE.TheanoNNclass.trainCompile">
+<code class="descname">trainCompile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.TheanoNNclass.trainCompile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fTheanoNNclassCORE.TheanoNNclass.trainCompileExternal">
+<code class="descname">trainCompileExternal</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.TheanoNNclass.trainCompileExternal" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fTheanoNNclassCORE.TheanoNNclass.unroll">
+<code class="descname">unroll</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.TheanoNNclass.unroll" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fTheanoNNclassCORE.TheanoNNclass.weightsVisualizer">
+<code class="descname">weightsVisualizer</code><span class="sig-paren">(</span><em>folder</em>, <em>size=(100</em>, <em>100)</em>, <em>color='L'</em>, <em>second=False</em><span class="sig-paren">)</span><a class="headerlink" href="#fTheanoNNclassCORE.TheanoNNclass.weightsVisualizer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to TNNF&#8217;s documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="fImageWorkerCORE.html"
+                        title="next chapter">fImageWorkerCORE module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/fTheanoNNclassCORE.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="fImageWorkerCORE.html" title="fImageWorkerCORE module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to TNNF’s documentation!"
+             >previous</a> |</li>
+        <li><a href="index.html">TNNF 2.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2014, Ihor Kostiuk, Roman Grubnyk.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b1.
+    </div>
+  </body>
+</html>

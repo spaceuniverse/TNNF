@@ -31,48 +31,55 @@ from theano.tensor.signal import downsample
 # Activation functions
 #---------------------------------------------------------------------#
 
-
 class FunctionModel(object):
-    @staticmethod  # FunctionModel.Sigmoid
-    #def Sigmoid(W, X, B, *args):
+    """
+    Collection of activation functions we support.
+    """
+
+    @staticmethod
     def Sigmoid(z, *args):
-        #z = T.dot(W, X) + B.dimshuffle(0, 'x')
         a = 1 / (1 + T.exp(-z))
         return a
 
-    @staticmethod  # FunctionModel.Sigmoid
-    #def ReLU(W, X, B, *args):
+    @staticmethod
     def ReLU(z, *args):
-        #z = T.dot(W, X) + B.dimshuffle(0, 'x')
         a = T.switch(T.gt(z, 0), z, 0)
         return a
 
-    @staticmethod  # FunctionModel.Sigmoid
-    #def ReLU(W, X, B, *args):
+    @staticmethod
     def LReLU(z, *args):
-        #z = T.dot(W, X) + B.dimshuffle(0, 'x')
         a = T.switch(T.gt(z, 0), z, z * 0.01)
         return a
 
-    @staticmethod  # FunctionModel.Sigmoid
-    #def Linear(W, X, B, *args):
+    @staticmethod
     def Linear(z, *args):
-        #z = T.dot(W, X) + B.dimshuffle(0, 'x')
         return z
 
-    @staticmethod  # FunctionModel.Tanh
-    #def Tanh(W, X, B, *args):
+    @staticmethod
     def Tanh(z, *args):
-        #z = T.dot(W, X) + B
         a = (T.exp(z) - T.exp(-z)) / (T.exp(z) + T.exp(-z))
         return a
 
-    @staticmethod  # FunctionModel.SoftMax
-    #def SoftMax(W, X, B, *args):
+    @staticmethod
     def SoftMax(z, *args):
-        #z = T.dot(W, X) + B.dimshuffle(0, 'x')
-        #numClasses = W.get_value().shape[0]
-        #numClasses = T.shape(W)[0]
+        """
+        SoftMax activation function with several updates to avoid NaN.
+
+        It is useful for output layer only.
+
+        Some hacks for fixing float32 GPU problem
+        a = T.clip(a, float(np.finfo(np.float32).tiny), float(np.finfo(np.float32).max))
+        a = T.clip(a, 1e-20, 1e20)
+        http://www.velocityreviews.com/forums/t714189-max-min-smallest-float-value-on-python-2-5-a.html
+        http://docs.scipy.org/doc/numpy/reference/generated/numpy.finfo.html
+        Links about possible approaches to fix nan
+        http://blog.csdn.net/xceman1997/article/details/9974569
+        https://github.com/Theano/Theano/issues/1563
+
+        :param z: input data (regardless of its size) that will be used for calculations
+        :param args: for now used only for MaxOut activation function
+        :return: array with the same size as 'z' and values recalculated according to
+        """
         numClasses = T.shape(z)[0]
         # ___CLASSIC___ #
         # a = T.exp(z) / T.dot(T.alloc(1.0, numClasses, 1), [T.sum(T.exp(z), axis = 0)])
@@ -84,20 +91,19 @@ class FunctionModel(object):
         z_max = T.max(z, axis=0)
         a = T.exp(z - T.log(T.dot(T.alloc(1.0, numClasses, 1), [T.sum(T.exp(z - z_max), axis=0)])) - z_max)
         # _____________ #
-        # Some hacks for fixing float32 GPU problem
-        # a = T.clip(a, float(np.finfo(np.float32).tiny), float(np.finfo(np.float32).max))
-        # a = T.clip(a, 1e-20, 1e20)
-        # http://www.velocityreviews.com/forums/t714189-max-min-smallest-float-value-on-python-2-5-a.html
-        # http://docs.scipy.org/doc/numpy/reference/generated/numpy.finfo.html
-        # Links about possible approaches to fix nan
-        # http://blog.csdn.net/xceman1997/article/details/9974569
-        # https://github.com/Theano/Theano/issues/1563
+
         return a
 
-    @staticmethod  # FunctionModel.MaxOut
-    #def MaxOut(W, X, B, *args):
+    @staticmethod
     def MaxOut(z, *args):
-        #z = T.dot(W, X) + B.dimshuffle(0, 'x')
+        """
+        MaxOut activation function \n
+        http://arxiv.org/pdf/1302.4389.pdf
+
+        :param z: input array
+        :param args: [0] - the number of "lines" to emulate MaxOut in each pool
+        :return: array with value based on MaxOut
+        """
         d = T.shape(z)
         n_elem = args[0]
         z = z.reshape((d[0] / n_elem, n_elem, d[1]))

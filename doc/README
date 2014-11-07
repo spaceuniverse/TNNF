@@ -1,0 +1,12 @@
+To build documentation (under doc directory):
+> bash$ make html
+
+Result will be located:
+> doc/_build/html/index.html
+
+
+Required packages:
+ * Sphinx
+
+Here is short HowTo:
+https://codeandchaos.wordpress.com/2012/07/30/sphinx-autodoc-tutorial-for-dummies/
