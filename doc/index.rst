@@ -9,8 +9,9 @@ Welcome to TNNF's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
+   HOWTO_Install.rst
    
    fTheanoNNclassCORE.rst
    fImageWorkerCORE.rst

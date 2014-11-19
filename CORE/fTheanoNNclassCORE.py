@@ -68,13 +68,17 @@ class FunctionModel(object):
         It is useful for output layer only.
 
         Some hacks for fixing float32 GPU problem
-        a = T.clip(a, float(np.finfo(np.float32).tiny), float(np.finfo(np.float32).max))
-        a = T.clip(a, 1e-20, 1e20)
-        http://www.velocityreviews.com/forums/t714189-max-min-smallest-float-value-on-python-2-5-a.html
-        http://docs.scipy.org/doc/numpy/reference/generated/numpy.finfo.html
+
+        * a = T.clip(a, float(np.finfo(np.float32).tiny), float(np.finfo(np.float32).max))
+        * a = T.clip(a, 1e-20, 1e20)
+
+        * http://www.velocityreviews.com/forums/t714189-max-min-smallest-float-value-on-python-2-5-a.html
+        * http://docs.scipy.org/doc/numpy/reference/generated/numpy.finfo.html
+
         Links about possible approaches to fix nan
-        http://blog.csdn.net/xceman1997/article/details/9974569
-        https://github.com/Theano/Theano/issues/1563
+
+        * http://blog.csdn.net/xceman1997/article/details/9974569
+        * https://github.com/Theano/Theano/issues/1563
 
         :param z: input data (regardless of its size) that will be used for calculations
         :param args: for now used only for MaxOut activation function
@@ -117,6 +121,20 @@ class FunctionModel(object):
 
 
 class LayerNN(object):
+    """
+    Basic layer class. By default - standard NeuralNet fully-connected network.
+
+    :param size_in: int, number of neurons on input
+    :param size_out: int, number neurons on out
+    :param activation: FunctionModel, activation function to use
+    :param weightDecay: float or False, weight decay regularization and its coefficient
+    :param sparsity: float or False, sparcity constraint. Make sense only with Sigmoid activation function
+    :param beta: float, sparse weight coefficient
+    :param dropout: float or False, dropout regularisation with defined coefficient
+    :param dropConnect: TBD
+    :param pool_size: int, Should be specified only for MaxOut activation function. Number of lines to emulate each neroun.
+    :return: layer object.
+    """
     def __init__(self,
                  size_in=1,
                  size_out=1,
@@ -139,9 +157,20 @@ class LayerNN(object):
         self.pool_size = pool_size
 
     def Printer(self):
+        """
+        Prints layer properties
+        :return:
+        """
         print self.__dict__
 
     def compileWeight(self, net, layerNum):
+        """
+        Allocates weights to be used as shared variable in Theano
+
+        :param net: TheanoNNclass object
+        :param layerNum: layer's index.
+        :return:
+        """
         random = sqrt(6) / sqrt(net.architecture[0].size_in + net.architecture[-1].size_out)
         W = dict()
 
@@ -170,12 +199,26 @@ class LayerNN(object):
         net.varWeights.append(W)
 
     def compileDropout(self, net, R):
+        """
+        Compile necessary mask matrix for dropout regularisation.
+        :param net: TheanoNNclass object
+        :param R: Theano's RandomGenerator object
+        :return:
+        """
         if self.dropout:
             net.dropOutVectors.append(R.binomial(p=self.dropout, size=(self.size_in,)).astype(theano.config.floatX))
         else:
             net.dropOutVectors.append(1.0)
 
     def compileSparsity(self, net, layerNum, num):
+        """
+        Compile necessary sparsity constraint calculations.
+
+        :param net: TheanoNNclass object
+        :param layerNum: int, layer's index
+        :param num: batch size
+        :return:
+        """
         sprs = T.sum(net.varArrayA[layerNum], axis=1) / (num + 0.0)
         epsilon = 1e-20
         sprs = T.clip(sprs, epsilon, 1 - epsilon)
@@ -184,6 +227,12 @@ class LayerNN(object):
         net.regularize.append(self.beta * KL)
 
     def compileActivation(self, net, layerNum):
+        """
+        Compile layer's activation taking into account dropout.
+        :param net: TheanoNNclass object
+        :param layerNum: int, layer's index
+        :return:
+        """
         variable = net.x if layerNum == 0 else net.varArrayA[layerNum - 1]
 
         #W x X + B
