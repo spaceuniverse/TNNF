@@ -21,6 +21,7 @@ test/
 api/
 mnist/
 undeployed/TheanoConv/Data/
+doc/_build
 
 #Script to run tests
 runTests.cmd
