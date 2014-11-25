@@ -24,20 +24,19 @@ if not on_rtd:  # only import and set the theme if we're building docs locally
     import sphinx_rtd_theme
     html_theme = 'sphinx_rtd_theme'
     html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
-
-# otherwise, readthedocs.org uses their theme by default, so no need to specify it
+    # otherwise, readthedocs.org uses their theme by default, so no need to specify it
 
 #FIX import for RTD
-import mock
-
-MOCK_MODULES = ['numpy', 'scipy', 'matplotlib', 'numpy.linalg', 'matplotlib.pylab',
-                'theano', 'theano.tensor.shared_randomstreams', 'theano.tensor',
-                'matplotlib.pyplot', 'theano.tensor.signal',
-                'pylearn2', 'pylearn2.sandbox', 'pylearn2.sandbox.cuda_convnet',
-                'pylearn2.sandbox.cuda_convnet.filter_acts', 'pylearn2.sandbox.cuda_convnet.pool',
-                'theano.sandbox.cuda.basic_ops', 'theano.sandbox', 'theano.sandbox.cuda']
-for mod_name in MOCK_MODULES:
-    sys.modules[mod_name] = mock.Mock()
+if on_rtd:
+    import mock
+    MOCK_MODULES = ['numpy', 'scipy', 'matplotlib', 'numpy.linalg', 'matplotlib.pylab',
+                    'theano', 'theano.tensor.shared_randomstreams', 'theano.tensor',
+                    'matplotlib.pyplot', 'theano.tensor.signal',
+                    'pylearn2', 'pylearn2.sandbox', 'pylearn2.sandbox.cuda_convnet',
+                    'pylearn2.sandbox.cuda_convnet.filter_acts', 'pylearn2.sandbox.cuda_convnet.pool',
+                    'theano.sandbox.cuda.basic_ops', 'theano.sandbox', 'theano.sandbox.cuda']
+    for mod_name in MOCK_MODULES:
+        sys.modules[mod_name] = mock.Mock()
 
 #-----------------#
 
