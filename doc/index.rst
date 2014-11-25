@@ -12,7 +12,8 @@ Contents:
    :maxdepth: 3
 
    HOWTO_Install.rst
-   
+   HOWTO_SimplestExample.rst
+
    fTheanoNNclassCORE.rst
    fImageWorkerCORE.rst
    fCutClassCORE.rst
