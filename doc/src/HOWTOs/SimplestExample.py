@@ -5,6 +5,7 @@ import sys
 sys.path.append('../../../CORE')
 from fTheanoNNclassCORE import OptionsStore, TheanoNNclass, NNsupport, FunctionModel, LayerNN
 from fDataWorkerCORE import csvDataLoader
+from fGraphBuilderCORE import Graph
 from matplotlib.pylab import plot, title, xlabel, ylabel, legend, grid, margins, savefig, close, xlim, ylim
 
 dataSize = 1000
@@ -21,11 +22,15 @@ data = np.random.rand(dataFeatures, dataSize)
 #Create random cross-validation [0, 1)
 CV = np.random.rand(dataFeatures, dataSize)
 
-#Create array for labeled data
+#Create array for labels
 labels = np.zeros((1, dataSize))
 
-#Calc labels based on supposed boundary decision function analytically
+#Create array for cross-validation labels
+CV_labels = np.zeros((1, dataSize))
+
+#Calc labels (and cross-validation) based on supposed boundary decision function analytically
 labels[0, :] = -data[0, :] + 1 > data[1, :]
+CV_labels[0, :] = -CV[0, :] + 1 > CV[1, :]
 
 #Let's draw our data and decision boundary we use to divide it
 #Calc decision boundary
@@ -91,11 +96,17 @@ NN.trainCompile()
 NN.predictCompile()
 
 #Number of iterations (cycles of training)
-iterations = 1
+iterations = 1000
 
 #Set step to draw
 drawEveryStep = 100
 draw = False
+
+#CV error accumulator (for network estimation)
+cv_err = []
+
+#Accuracy accumulator (for network estimation)
+acc = []
 
 #Main cycle
 for i in xrange(iterations):
@@ -138,3 +149,13 @@ for i in xrange(iterations):
 
         #Close and clear current plot
         close()
+
+        #Estimate Neural Network error (square error, "distance" between real and predicted value) on cross-validation
+        cv_err.append(NNsupport.crossV(dataSize, CV_labels, CV, NN))
+
+        #Estimate network's accuracy
+        accuracy = np.mean(CV_labels == np.round(NN.out))
+        acc.append(accuracy)
+
+        #Draw how error and accuracy evolves vs iterations
+        Graph.Builder(name='NN_error.png', error=NN.errorArray, cv=cv_err, accuracy=acc, legend_on=True)

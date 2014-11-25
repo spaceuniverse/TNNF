@@ -128,7 +128,13 @@ To get rid you from routine we already did this with small *drawEveryStep* and p
 .. image:: ../media/HOWTOs/How_it_performs.gif
 
 As you can see - with each iteration Neural Net moves closer to original decision boundary.
-That is what we wanted to show you: how simple Neural Network adapt and learn on real data.
+That is what we wanted to show you: how Neural Network adapt and learn on real data.
+
+Here is one more informative graph. We can track how accuracy and network error evolves vs iterations.
+
+.. image:: ../media/HOWTOs/NN_error.png
+
+It almost reach 100% accuracy!
 
 Full `script <https://raw.githubusercontent.com/spaceuniverse/TNNF/master/doc/src/HOWTOs/SimplestExample.py>`_ listing:
 
