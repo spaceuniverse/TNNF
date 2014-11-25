@@ -1,3 +1,6 @@
+How to Install and Run
+======================
+
 * `Python installation`_
 * `Dependencies`_ (numpy, cuda, theano etc.)
 * `SSBrain installation`_
