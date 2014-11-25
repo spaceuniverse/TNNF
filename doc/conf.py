@@ -32,8 +32,9 @@ import mock
 
 MOCK_MODULES = ['numpy', 'scipy', 'matplotlib', 'numpy.linalg', 'matplotlib.pylab',
                 'theano', 'theano.tensor.shared_randomstreams', 'theano.tensor',
-                'matplotlib.pyplot', 
-                'pylearn2', 'pylearn2.sandbox', 'pylearn2.sandbox.cuda_convnet', 'pylearn2.sandbox.cuda_convnet.filter_acts']
+                'matplotlib.pyplot',
+                'pylearn2', 'pylearn2.sandbox', 'pylearn2.sandbox.cuda_convnet',
+                'pylearn2.sandbox.cuda_convnet.filter_acts', 'pylearn2.sandbox.cuda_convnet.pool']
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
 
