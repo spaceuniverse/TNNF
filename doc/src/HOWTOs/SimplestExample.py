@@ -94,7 +94,8 @@ NN.predictCompile()
 iterations = 1
 
 #Set step to draw
-drawEveryStep = 1000
+drawEveryStep = 100
+draw = False
 
 #Main cycle
 for i in xrange(iterations):
@@ -103,7 +104,7 @@ for i in xrange(iterations):
     NN.trainCalc(data, labels, iteration=1, debug=True)
 
     #Draw data, original and current decision boundary every drawEveryStep's step
-    if i % drawEveryStep == 0:
+    if draw and i % drawEveryStep == 0:
 
         #Get current coefficient for our network
         b = NN.varWeights[0]['b'].get_value()[0]
