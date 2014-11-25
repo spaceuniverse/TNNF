@@ -75,6 +75,7 @@ options = OptionsStore(learnStep=0.05,
                        minibatch_size=dataSize,
                        CV_size=dataSize)
 
+#Layer architecture
 #We will use only one layer with 2 neurons on input and 1 on output
 L1 = LayerNN(size_in=dataFeatures,
              size_out=1,

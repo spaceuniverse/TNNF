@@ -55,12 +55,37 @@ To define **predicted** label we will round the activation of output layer:
            \end{cases}
 
 
-Here is how it looks in code:
+Here is how it looks in code.
 
-.. include:: src/HOWTOs/SimplestExample.py
+Set general options for whole network, such as:
+
+* Learning step
+* Size of mini-batch we will use (in this case we use full batch)
+* Size of cross-validation set
+
+.. literalinclude:: src/HOWTOs/SimplestExample.py
+   :language: python
    :start-after: #NN part
+   :end-before: #Layer architecture
+
+Describe per layer architcture. Set:
+
+* Number of neurons on layer's input
+* Number of neurons on layer's output
+* Specify activation function to use
+
+.. literalinclude:: src/HOWTOs/SimplestExample.py
+   :language: python
+   :start-after: CV_size=dataSize
+   :end-before: #Compile NN
+
+Put everything together and create network object:
+
+.. literalinclude:: src/HOWTOs/SimplestExample.py
+   :language: python
+   :start-after: FunctionModel.Linear
    :end-before: #Compile NN train
-   :code: python
+
 
 .. include:: src/HOWTOs/SimplestExample.py
    :code: python
