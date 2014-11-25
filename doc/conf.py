@@ -15,7 +15,8 @@
 import sys
 import os
 
-#TEST
+#-----------------#
+#TNNF addition
 # on_rtd is whether we are on readthedocs.org, this line of code grabbed from docs.readthedocs.org
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
@@ -26,6 +27,14 @@ if not on_rtd:  # only import and set the theme if we're building docs locally
 
 # otherwise, readthedocs.org uses their theme by default, so no need to specify it
 
+#FIX import for RTD
+import mock
+
+MOCK_MODULES = ['numpy', 'scipy', 'matplotlib']
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = mock.Mock()
+
+#-----------------#
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the

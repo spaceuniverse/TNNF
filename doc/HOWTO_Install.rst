@@ -88,7 +88,7 @@ SSBrain is a number of Python modules.
 
 The only thing you need:
 
-#. Download latest version from GitHub
+#. Download latest version from `GitHub <https://github.com/spaceuniverse/TNNF.git>`_
 #. Import it using standard Python syntax:
 
    .. code:: python
