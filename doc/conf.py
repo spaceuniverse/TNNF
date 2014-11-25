@@ -32,7 +32,7 @@ import mock
 
 MOCK_MODULES = ['numpy', 'scipy', 'matplotlib', 'numpy.linalg', 'matplotlib.pylab',
                 'theano', 'theano.tensor.shared_randomstreams', 'theano.tensor',
-                'matplotlib.pyplot',
+                'matplotlib.pyplot', 'theano.tensor.signal',
                 'pylearn2', 'pylearn2.sandbox', 'pylearn2.sandbox.cuda_convnet',
                 'pylearn2.sandbox.cuda_convnet.filter_acts', 'pylearn2.sandbox.cuda_convnet.pool',
                 'theano.sandbox.cuda.basic_ops', 'theano.sandbox', 'theano.sandbox.cuda']
