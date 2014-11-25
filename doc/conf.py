@@ -30,7 +30,8 @@ if not on_rtd:  # only import and set the theme if we're building docs locally
 #FIX import for RTD
 import mock
 
-MOCK_MODULES = ['numpy', 'scipy', 'matplotlib', 'numpy.linalg', 'matplotlib.pylab']
+MOCK_MODULES = ['numpy', 'scipy', 'matplotlib', 'numpy.linalg', 'matplotlib.pylab',
+                'theano', 'theano.tensor.shared_randomstreams']
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
 
