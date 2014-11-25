@@ -10,7 +10,6 @@ import theano.tensor as T
 import csv as csv
 import cPickle
 import time
-from scipy.cluster.vq import *
 import matplotlib.pylab as plt
 from PIL import Image, ImageOps, ImageFilter
 
