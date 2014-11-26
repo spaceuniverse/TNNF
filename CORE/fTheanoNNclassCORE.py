@@ -124,13 +124,12 @@ class FunctionModel(object):
 
         .. math::
 
-           activation = \\frac{1}
-                             {\\sum\\limits_{j=1}^k e^{\\sideset{}{j^T}\\theta x^{(i)}}}
+           activation = \\frac{1}{\\sum\\limits_{j=1}^k e^{\\theta_j^T x^{(i)}}}
                         \\left[\\begin{aligned}
-                               e^{\\sideset{}{1^T}\\theta x^{(i)}}\\\\
-                               e^{\\sideset{}{2^T}\\theta x^{(i)}}\\\\
-                               \\vdots\\\\
-                               e^{\\sideset{}{k^T}\\theta x^{(i)}}
+                               e^{\\theta_1^T & x^{(i)}}\\\\
+                               e^{\\theta_2^T & x^{(i)}}\\\\
+                               &\\vdots\\\\
+                               e^{\\theta_k^T & x^{(i)}}
                               \\end{aligned}
                         \\right]
 
