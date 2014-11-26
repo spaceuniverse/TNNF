@@ -41,26 +41,50 @@ class FunctionModel(object):
         """
         Standard sigmoid.
 
-        :math:`activation=\\frac{1}{1+e^{-z}}`
-
         .. math::
 
            activation = \\frac{1}{1 + e^{-z}}
 
         :param z: array, raw activation, usually calculated as :math:`z=W^Tx` that will be used for further calculation.
         :param args: array, additional parameters. For now uses for MaxOut.
-        :return: array, same size as 'z' (except MaxOut case).
+        :return: array, same size as 'z'.
         """
         a = 1 / (1 + T.exp(-z))
         return a
 
     @staticmethod
     def ReLU(z, *args):
+        """
+        Rectified Linear Unit. More info `here <http://en.wikipedia.org/wiki/Rectifier_%28neural_networks%29>`_.
+
+        .. math::
+
+           activation = \\max(0, z)
+
+        :param z: array, raw activation, usually calculated as :math:`z=W^Tx` that will be used for further calculation.
+        :param args: array, additional parameters. For now uses for MaxOut.
+        :return: array, same size as 'z'.
+        """
         a = T.switch(T.gt(z, 0), z, 0)
         return a
 
     @staticmethod
     def LReLU(z, *args):
+        """
+        Leaky Rectified Linear Unit. More info `here <http://en.wikipedia.org/wiki/Rectifier_%28neural_networks%29>`_.
+
+        .. math::
+
+           activation=
+              \begin{cases}
+                z, & if z > 0\\
+                0.01z, & otherwise
+              \end{cases}
+
+        :param z: array, raw activation, usually calculated as :math:`z=W^Tx` that will be used for further calculation.
+        :param args: array, additional parameters. For now uses for MaxOut.
+        :return: array, same size as 'z'.
+        """
         a = T.switch(T.gt(z, 0), z, z * 0.01)
         return a
 
