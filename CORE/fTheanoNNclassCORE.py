@@ -41,11 +41,11 @@ class FunctionModel(object):
         """
         Standard sigmoid.
 
-        :math:`activation=\frac{1}{1+e^{-z}}`
+        :math:`activation=\\frac{1}{1+e^{-z}}`
 
         .. math::
 
-           activation = \frac{1}{1 + e^{-z}}
+           activation = \\frac{1}{1 + e^{-z}}
 
         :param z: array, raw activation, usually calculated as :math:`z=W^Tx` that will be used for further calculation.
         :param args: array, additional parameters. For now uses for MaxOut.
