@@ -125,13 +125,12 @@ class FunctionModel(object):
         .. math::
 
            activation = \\frac{1}{\\sum\\limits_{j=1}^k e^{\\theta_j^T x^{(i)}}}
-                        \\left[\\begin{aligned}
-                               e^{\\theta_1^T & x^{(i)}}\\\\
-                               e^{\\theta_2^T & x^{(i)}}\\\\
-                               &\\vdots\\\\
-                               e^{\\theta_k^T & x^{(i)}}
-                              \\end{aligned}
-                        \\right]
+           \\left[\\begin{aligned}
+           e&^{\\theta_1^Tx^{(i)}}\\\\
+           e&^{\\theta_2^Tx^{(i)}}\\\\
+           &\\vdots\\\\
+           e&^{\\theta_k^Tx^{(i)}}
+           \\end{aligned}\\right]
 
         Some hacks for fixing float32 GPU problem:
 
