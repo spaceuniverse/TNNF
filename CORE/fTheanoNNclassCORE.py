@@ -47,7 +47,7 @@ class FunctionModel(object):
 
         :param z: array, raw activation, usually calculated as :math:`z=W^Tx` that will be used for further calculation.
         :param args: array, additional parameters. For now uses for MaxOut.
-        :return: array, same size as 'z'.
+        :return: array, same size as **z**.
         """
         a = 1 / (1 + T.exp(-z))
         return a
@@ -63,7 +63,7 @@ class FunctionModel(object):
 
         :param z: array, raw activation, usually calculated as :math:`z=W^Tx` that will be used for further calculation.
         :param args: array, additional parameters. For now uses for MaxOut.
-        :return: array, same size as 'z'.
+        :return: array, same size as **z**.
         """
         a = T.switch(T.gt(z, 0), z, 0)
         return a
@@ -76,24 +76,42 @@ class FunctionModel(object):
         .. math::
 
            activation=
-              \begin{cases}
-                z, & if z > 0\\
+              \\begin{cases}
+                z, & if z > 0\\\\
                 0.01z, & otherwise
-              \end{cases}
+              \\end{cases}
 
         :param z: array, raw activation, usually calculated as :math:`z=W^Tx` that will be used for further calculation.
         :param args: array, additional parameters. For now uses for MaxOut.
-        :return: array, same size as 'z'.
+        :return: array, same size as **z**.
         """
         a = T.switch(T.gt(z, 0), z, z * 0.01)
         return a
 
     @staticmethod
     def Linear(z, *args):
+        """
+        Linear activation function. Returns input as-is.
+
+        :param z: array, raw activation, usually calculated as :math:`z=W^Tx` that will be used for further calculation.
+        :param args: array, additional parameters. For now uses for MaxOut.
+        :return: array, same size as **z**.
+        """
         return z
 
     @staticmethod
     def Tanh(z, *args):
+        """
+        Hyperbolic tangent.
+
+        .. math::
+
+           activation = \\frac{e^z - e^{-z}}{e^z + e^{-z}}
+
+        :param z: array, raw activation, usually calculated as :math:`z=W^Tx` that will be used for further calculation.
+        :param args: array, additional parameters. For now uses for MaxOut.
+        :return: array, same size as **z**.
+        """
         a = (T.exp(z) - T.exp(-z)) / (T.exp(z) + T.exp(-z))
         return a
 
@@ -102,24 +120,40 @@ class FunctionModel(object):
         """
         SoftMax activation function with several updates to avoid NaN.
 
-        It is useful for output layer only.
+        It is useful for **output layer only**.
 
-        Some hacks for fixing float32 GPU problem
+        .. math::
 
-        * a = T.clip(a, float(np.finfo(np.float32).tiny), float(np.finfo(np.float32).max))
-        * a = T.clip(a, 1e-20, 1e20)
+           activation = \\frac{1}
+                             {\\sum\\limits_{j=1}^k e^{\\sideset{}{j^T}\\theta x^{(i)}}}
+                        \\left[\\begin{aligned}
+                               e^{\\sideset{}{1^T}\\theta& x^{(i)}}\\\\
+                               e^{\\sideset{}{2^T}\\theta& x^{(i)}}\\\\
+                               \vdots\\
+                               e^{\\sideset{}{k^T}\\theta& x^{(i)}}
+                              \\end{aligned}
+                        \\right]
+
+        Some hacks for fixing float32 GPU problem:
+
+        .. code:: python
+
+           a = T.clip(a, float(np.finfo(np.float32).tiny), float(np.finfo(np.float32).max))
+           a = T.clip(a, 1e-20, 1e20)
+
+        Proof links:
 
         * http://www.velocityreviews.com/forums/t714189-max-min-smallest-float-value-on-python-2-5-a.html
         * http://docs.scipy.org/doc/numpy/reference/generated/numpy.finfo.html
 
-        Links about possible approaches to fix nan
+        Links about possible approaches to fix NaN:
 
         * http://blog.csdn.net/xceman1997/article/details/9974569
         * https://github.com/Theano/Theano/issues/1563
 
-        :param z: input data (regardless of its size) that will be used for calculations
-        :param args: for now used only for MaxOut activation function
-        :return: array with the same size as 'z' and values recalculated according to
+        :param z: array, raw activation, usually calculated as :math:`z=W^Tx` that will be used for further calculation.
+        :param args: array, additional parameters. For now uses for MaxOut.
+        :return: array, same size as **z**.
         """
         numClasses = T.shape(z)[0]
         # ___CLASSIC___ #
@@ -138,12 +172,18 @@ class FunctionModel(object):
     @staticmethod
     def MaxOut(z, *args):
         """
-        MaxOut activation function \n
-        http://arxiv.org/pdf/1302.4389.pdf
+        MaxOut activation function.
 
-        :param z: input array
-        :param args: [0] - the number of "lines" to emulate MaxOut in each pool
-        :return: array with value based on MaxOut
+        Original paper: http://arxiv.org/pdf/1302.4389.pdf
+
+        .. math::
+
+           activation_{i} = \max_{j \in [1,k]} z_{i,j}
+
+        :param z: array, raw activation, usually calculated as :math:`z=W^Tx` that will be used for further calculation.
+        :param args: [0] - the number of "lines" to emulate MaxOut in each pool.
+                           Say, in case we have here 3 - each output neuron will be emulated as 3 linear functions.
+        :return: array, size along [0] axis reduced times "lines".
         """
         d = T.shape(z)
         n_elem = args[0]
