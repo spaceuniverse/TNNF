@@ -38,6 +38,15 @@ class FunctionModel(object):
 
     @staticmethod
     def Sigmoid(z, *args):
+        """
+        Standard sigmoid.
+
+        :math:`activation = \frac{1}{1 + e^{-z}}`
+
+        :param z: array, raw activation, usually calculated as :math:`z=W^Tx`
+        :param args:
+        :return:
+        """
         a = 1 / (1 + T.exp(-z))
         return a
 
