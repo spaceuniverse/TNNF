@@ -129,7 +129,7 @@ class FunctionModel(object):
                         \\left[\\begin{aligned}
                                e^{\\sideset{}{1^T}\\theta& x^{(i)}}\\\\
                                e^{\\sideset{}{2^T}\\theta& x^{(i)}}\\\\
-                               \vdots\\
+                               \\vdots\\\\
                                e^{\\sideset{}{k^T}\\theta& x^{(i)}}
                               \\end{aligned}
                         \\right]
