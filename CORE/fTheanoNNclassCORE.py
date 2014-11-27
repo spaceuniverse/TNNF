@@ -679,6 +679,17 @@ class OptionsStore(object):
                  rProp=False,
                  minibatch_size=1,
                  CV_size=1):
+        """
+        Container for global network's options.
+
+        :param learnStep: float, learn step to use in *gradient descent* or RMSprop
+        :param rmsProp: False or float, whether to use RMSprop or not. If yes - rate of RootMeanSquare. Usually 0.9
+        :param mmsmin: float, clip RootMeanSquare to avoid NaN. Default: 1e-10. Reasonable: down to 1e-20
+        :param rProp: False or float, use only for **full batch**. If yes - rate to increase next weight's change.
+        :param minibatch_size: int, size of batch you use. Can't be changed compiling.
+        :param CV_size: int, size of cross validation set. Can't be changed compiling.
+        :return: OptionStore object.
+        """
         self.learnStep = learnStep  # Learning step for gradient descent
         self.rmsProp = rmsProp  # rmsProp on|off
         self.mmsmin = mmsmin  # Min mms value
@@ -687,6 +698,11 @@ class OptionsStore(object):
         self.CV_size = CV_size
 
     def Printer(self):
+        """
+        Print out to stdout current options. Useful for debug.
+
+        :return: nothing
+        """
         print self.__dict__
 
 
@@ -697,6 +713,15 @@ class OptionsStore(object):
 
 class TheanoNNclass(object):
     def __init__(self, opt, architecture):
+        """
+        The most important class. Here everything combines together.
+
+        Using info defined in OptionStore and Layers - compile Network object.
+
+        :param opt: OptionStore, general network's options.
+        :param architecture: list, list of layers to build a network.
+        :return: TheanoNNclass object
+        """
         self.REPORT = "OK"
 
         self.architecture = architecture
@@ -764,6 +789,12 @@ class TheanoNNclass(object):
         self.outputArray = []
 
     def trainCompile(self):
+        """
+        Using OptionsStore, Layers - create shared variable and Theno's function to train network.
+        Usually, should be call only once for each network.
+
+        :return:  link self.train  with appropriate theano's function
+        """
 
         # Activation
         for i in xrange(self.lastArrayNum):
@@ -825,6 +856,14 @@ class TheanoNNclass(object):
         return self
 
     def trainCompileExternal(self):
+        """
+        It is possible to use external optimisation.
+
+        In case yu decide to use something external - this method will prepare necessary functions.
+        So after you should be able to use returned gradient and load updated weights.
+
+        :return:
+        """
 
         # Activation
         for i in xrange(self.lastArrayNum):
@@ -866,9 +905,19 @@ class TheanoNNclass(object):
                                              allow_input_downcast=True)
         return self
 
-    def trainCalcExternal(self, model, X, Y):  # Need to call trainCompile before
+    def trainCalcExternal(self, model, X, Y):
+        """
+        Call this method in case you want to use external optimizer.
 
+        :param model: vector, new weights for network.
+        :param X: array, data to train on.
+        :param Y: array, labels for data.
+        :return: (float, array), network's error and weight's gradients
+        """
+
+        #Roll, reshape and update shared variables using vector of weights
         self.roll(model)
+
         #error, ent, grads = self.trainExternal(X, Y)
         res = self.trainExternal(X, Y)
 
@@ -876,6 +925,7 @@ class TheanoNNclass(object):
         error = res[0]
         grads = res[2:]
 
+        #Unroll returned by network gradients in the same way as weights.
         count = 0
         for g in grads:
             if count == 0:
@@ -897,6 +947,17 @@ class TheanoNNclass(object):
         return error, np.float64(grad)
 
     def trainCalc(self, X, Y, iteration=10, debug=False, errorCollect=False):  # Need to call trainCompile before
+        """
+        Standard method to train network using labeled data.
+
+        :param X: array, data to train network on.
+        :param Y: array, data's labels.
+        :param iteration: number of cycles you want network to train on current X
+        :param debug: boolean, whether to print some useful info.
+        :param errorCollect: boolean, whether to collect network's error in *self.errorArray* field
+        :return:
+        """
+
         for i in xrange(iteration):
             error, ent = self.train(X, Y)
             if errorCollect:
