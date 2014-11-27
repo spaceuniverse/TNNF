@@ -276,6 +276,7 @@ class LayerNN(object):
     def compileDropout(self, net, R):
         """
         Compile necessary mask matrix for dropout regularisation.
+
         :param net: TheanoNNclass object
         :param R: Theano's RandomGenerator object
         :return:
@@ -303,7 +304,8 @@ class LayerNN(object):
 
     def compileActivation(self, net, layerNum):
         """
-        Compile layer's activation taking into account dropout.
+        Compile layer's activation taking into account dropout. Used during network's training to calculate activations.
+
         :param net: TheanoNNclass object
         :param layerNum: int, layer's index
         :return:
@@ -321,6 +323,13 @@ class LayerNN(object):
         net.varArrayA.append(a)
 
     def compilePredictActivation(self, net, layerNum):
+        """
+        Compile layer's activation taking into account dropout. Used to calculate predictions without training.
+
+        :param net: TheanoNNclass object
+        :param layerNum: int, layer's index
+        :return:
+        """
         variable = net.x if layerNum == 0 else net.varArrayAc[layerNum - 1]
 
         #W x X + B
@@ -333,6 +342,17 @@ class LayerNN(object):
         net.varArrayAc.append(a)
 
     def compileWeightDecayPenalty(self, net, layerNum):
+        """
+        Adds weight decay penalty to network's error. Useful to decrease absolute weight's values.
+
+        .. math::
+
+           penalty = \\frac{1}{2}\\sum W_{target\\>layer}^2
+
+        :param net: TheanoNNclass object
+        :param layerNum: int, layer's index
+        :return:
+        """
         penalty = T.sum(net.varWeights[layerNum]['w'] ** 2) * self.weightDecay / 2
         net.regularize.append(penalty)
 
