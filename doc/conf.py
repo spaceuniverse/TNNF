@@ -26,6 +26,9 @@ if not on_rtd:  # only import and set the theme if we're building docs locally
     html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
     # otherwise, readthedocs.org uses their theme by default, so no need to specify it
 
+    #Mathjax path to render locally
+    mathjax_path = 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
+
 #FIX import for RTD
 if on_rtd:
     import mock
