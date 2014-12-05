@@ -290,6 +290,20 @@ class LayerNN(object):
         """
         Compile necessary sparsity constraint calculations.
 
+        Average activation of hidden unit *j* (averaged over the training set):
+
+        .. math::
+
+           \\hat{\\rho} = \\frac{1}{m}\\sum\\limits_{i=1}^{m}\\left[a_j(x^{(i)})\\right]
+
+        Then penalty (using Kullback-Leibler):
+
+        .. math::
+
+           penalty = \\sum\\limits_{j=1}^{hiddenUnits}\\rho\\log\\frac{\\rho}{\\hat\\rho_{j}} + (1 - \\rho)\\log\\frac{1 - \\rho}{1 - \\hat\\rho_{j}}
+
+        where :math:`\\rho` - is *sparsity* parameter. Means - the level of average activation we want to achieve.
+
         :param net: TheanoNNclass object
         :param layerNum: int, layer's index
         :param num: batch size
@@ -304,7 +318,8 @@ class LayerNN(object):
 
     def compileActivation(self, net, layerNum):
         """
-        Compile layer's activation taking into account dropout. Used during network's training to calculate activations.
+        Compile layer's activation taking into account dropout and specified activation function.
+        Used during network's training to calculate activations.
 
         :param net: TheanoNNclass object
         :param layerNum: int, layer's index
@@ -324,7 +339,8 @@ class LayerNN(object):
 
     def compilePredictActivation(self, net, layerNum):
         """
-        Compile layer's activation taking into account dropout. Used to calculate predictions without training.
+        Compile layer's activation taking into account dropout and specified activation function.
+        Used to calculate predictions without training.
 
         :param net: TheanoNNclass object
         :param layerNum: int, layer's index
@@ -359,6 +375,21 @@ class LayerNN(object):
 
 class LayerRNN(LayerNN):
     def __init__(self, blocks=1, peeholes=False, **kwargs):
+        """
+        Layer class that extends standard LayerNN class and implements RNN type of network.
+        Particularly, here we implement LSTM (Long Short-Term Memory).
+
+        You can find more info about it on:
+
+        * `Wiki <http://en.wikipedia.org/wiki/Long_short_term_memory>`_
+        * `Original paper <http://deeplearning.cs.cmu.edu/pdfs/Hochreiter97_lstm.pdf>`_
+        * `With peeholes `here <http://people.idsia.ch/~juergen/rnn.html>`_
+
+        :param blocks: int, number of blocks to create. Should be equivalent to *size_out*
+        :param peeholes: boolean, whether to use peeholes or not (send Acc to input gate).
+        :param kwargs: needs for compatibility.
+        :return: LayerRNN object
+        """
 
         super(LayerRNN, self).__init__(**kwargs)
         self.blocks = blocks

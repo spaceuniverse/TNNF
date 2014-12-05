@@ -2,8 +2,9 @@
 
 Some file and methods names:
 
-TNNC - Theano Neural Net Class (One class in fTheanoNNclassCORE.py)
-TNNF - Theano Neural Net Framework (All files and classes)
+TNNF - Tiny Neural Net Framework (All files and classes)
+
+Online auto-generated docs: http://tnnf.readthedocs.org/en/latest/index.html
 
 Features:
 
@@ -13,14 +14,14 @@ Features:
 + softmax
 + sigmoid
 + dropout
-+ unsupervised reature learning and deep learning
++ unsupervised feature learning and deep learning
 + saving and loading models
 + rmsProp
 + rProp
 + minibatches
 + PCA whitening
++ convolution
 
-- convolution (in progress)
 
 Files:
 
