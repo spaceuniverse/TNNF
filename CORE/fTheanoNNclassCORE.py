@@ -55,7 +55,7 @@ class FunctionModel(object):
     @staticmethod
     def ReLU(z, *args):
         """
-        Rectified Linear Unit. More info `here <http://en.wikipedia.org/wiki/Rectifier_%28neural_networks%29>`_.
+        Rectified Linear Unit. More `info <http://en.wikipedia.org/wiki/Rectifier_%28neural_networks%29>`_.
 
         .. math::
 
@@ -71,7 +71,7 @@ class FunctionModel(object):
     @staticmethod
     def LReLU(z, *args):
         """
-        Leaky Rectified Linear Unit. More info `here <http://en.wikipedia.org/wiki/Rectifier_%28neural_networks%29>`_.
+        Leaky Rectified Linear Unit. More `info <http://en.wikipedia.org/wiki/Rectifier_%28neural_networks%29>`_.
 
         .. math::
 
@@ -383,7 +383,7 @@ class LayerRNN(LayerNN):
 
         * `Wiki <http://en.wikipedia.org/wiki/Long_short_term_memory>`_
         * `Original paper <http://deeplearning.cs.cmu.edu/pdfs/Hochreiter97_lstm.pdf>`_
-        * `With peeholes `here <http://people.idsia.ch/~juergen/rnn.html>`_
+        * More about `traditional LSTM vs peepholed <http://www.jmlr.org/papers/volume3/gers02a/gers02a.pdf>`_
 
         :param blocks: int, number of blocks to create. Should be equivalent to *size_out*
         :param peeholes: boolean, whether to use peeholes or not (send Acc to input gate).
@@ -409,6 +409,18 @@ class LayerRNN(LayerNN):
         self.W_mask = None
 
     def compileWeight(self, net, layerNum):
+        """
+        Allocates weights to be used as shared variable in Theano.
+
+        To initialise bias we use values advised `here <http://www.jmlr.org/papers/volume3/gers02a/gers02a.pdf>`_:
+
+        * Input gate: 0.0
+        * Forget gate: -2.0
+        * Output gate: +2.0
+
+        :param net: TheanoNNclass object
+        :param layerNum: layer's index.
+        """
         random = 0.1
         W = dict()
 
@@ -458,6 +470,26 @@ class LayerRNN(LayerNN):
             self.W_mask = 1.0
 
     def compileActivation(self, net, layerNum):
+        """
+        Compile layer's activation taking into account dropout.
+        It is meaningful to use Sigmoid activation function (or probably hyperbolic tang).
+
+        Activation calculated as follows:
+
+        #. :math:`Input\\>activation`
+        #. :math:`Input\\>gate`
+        #. :math:`Forget\\>gate`
+        #. :math:`Output\\>gate`
+        #. *All above where calculated in one step*
+        #. :math:`Pi = {Input\\>activation} \\times {Input\\>gate}`
+        #. :math:`Pr = {Forget\\>gate} \\times {Cell\\>state}`
+        #. :math:`{Cell\\>state} = Pi + Pr`
+        #. :math:`output = {Output\\>gate} \\times {Cell\\>state}`
+
+
+        :param net: TheanoNNclass object
+        :param layerNum: layer's index.
+        """
         variable = net.x if layerNum == 0 else net.varArrayA[layerNum - 1]
 
         if self.peeholes:
@@ -498,6 +530,14 @@ class LayerRNN(LayerNN):
         net.varArrayA.append(Po)
 
     def compilePredictActivation(self, net, layerNum):
+        """
+        Compile layer's activation taking into account dropout and specified activation function.
+        Used to calculate predictions without training.
+        Uses **separate** Accumulator to store cell's state independently from training.
+
+        :param net: TheanoNNclass object
+        :param layerNum: layer's index
+        """
         variable = net.x if layerNum == 0 else net.varArrayAc[layerNum - 1]
 
         if self.peeholes:
