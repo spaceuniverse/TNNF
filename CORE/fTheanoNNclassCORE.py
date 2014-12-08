@@ -376,7 +376,7 @@ class LayerNN(object):
 class LayerRNN(LayerNN):
     def __init__(self, blocks=1, peeholes=False, **kwargs):
         """
-        Layer class that extends standard LayerNN class and implements RNN type of network.
+        Layer class that extends standard LayerNN class and implements RNN (recurrent) type of network.
         Particularly, here we implement LSTM (Long Short-Term Memory).
 
         You can find more info about it on:
@@ -480,8 +480,11 @@ class LayerRNN(LayerNN):
         #. :math:`Input\\>gate`
         #. :math:`Forget\\>gate`
         #. :math:`Output\\>gate`
-        #. *All above where calculated in one step*
-        #. :math:`Pi = {Input\\>activation} \\times {Input\\>gate}`
+
+        .. note::
+           *All above where calculated in one step*
+
+        5. :math:`Pi = {Input\\>activation} \\times {Input\\>gate}`
         #. :math:`Pr = {Forget\\>gate} \\times {Cell\\>state}`
         #. :math:`{Cell\\>state} = Pi + Pr`
         #. :math:`output = {Output\\>gate} \\times {Cell\\>state}`
@@ -580,6 +583,36 @@ class LayerRNN(LayerNN):
 
 class LayerCNN(LayerNN):
     def __init__(self, kernel_shape=None, stride=1, pooling=False, pooling_shape=None, optimized=False, **kwargs):
+        """
+        Layer class that extends standard LayerNN class and implements CNN (convolution, **not fully connected**) type of network.
+        The most useful type of network to apply for image processing beyond others NN algorithms.
+        It implements the most brain-like way to process data (applies the same weights to small parts of input data).
+        Read more about convolution here:
+
+        * http://deeplearning.net/tutorial/lenet.html
+        * http://en.wikipedia.org/wiki/Convolutional_neural_network
+
+        :param kernel_shape: tuple of int, kernels to use (number of kernels, colors, shape X, shape Y)
+        :param stride: int, step between *windows* in *pixels*
+        :param pooling: boolean, whether to use pooling after convolution or not
+        :param pooling_shape: int, pooling window's shape. Stride will be the same, so only standard non-overlapping pooling is available.
+        :param optimized: boolean, whether to use highly optimized version or not. In case TRUE - it is able to run only on GPU.
+        :param kwargs: other parameters are inherited from LayerNN.__init__()
+
+        .. note::
+           In case :code:`optimized = True` there are number of restrictions you have take into account:
+
+           * The **number of channels must be even, or less than or equal to 3**.
+             If you want to compute the gradient, it should be divisible by 4.
+             Valid numbers of input channels are: 1, 2, 3, 4, 8, 12, 16, ...
+           * **Filters** must be square.
+           * The **number of filters** must be a multiple of **16**.
+           * All minibatch sizes are supported, but the best performance is achieved when the minibatch size is a multiple of 128.
+           * Only "valid" convolutions are supported.
+             If you want to perform a "full" convolution, you will need to use zero-padding (more on this later).
+           * Only works on the GPU. You cannot run your Theano code on the CPU if you use it.
+             But still possible to train on GPU and to load & run on CPU.
+        """
 
         super(LayerCNN, self).__init__(**kwargs)
 
@@ -591,6 +624,13 @@ class LayerCNN(LayerNN):
 
 
     def compileWeight(self, net, layerNum):
+        """
+        Allocates weights to be used as shared variable in Theano. It is impossible to use MaxOut as activation function yet.
+        In case you experience train issues - try to change init random values.
+
+        :param net: TheanoNNclass object
+        :param layerNum: layer's index.
+        """
         random = sqrt(6) / sqrt(self.kernel_shape[-1] * self.kernel_shape[-2] * self.kernel_shape[0])
         W = dict()
 
@@ -624,7 +664,12 @@ class LayerCNN(LayerNN):
         net.varWeights.append(W)
 
     def compileDropout(self, net, R):
-        #Assume we work only with square kernels
+        """
+        Compile necessary mask matrix for dropout regularisation.
+
+        :param net: TheanoNNclass object
+        :param R: Theano's RandomGenerator object
+        """
         if self.dropout:
             net.dropOutVectors.append(R.binomial(p=self.dropout, size=(self.kernel_shape[-2], self.kernel_shape[-1]))
                                       .astype(theano.config.floatX))
