@@ -599,8 +599,11 @@ class LayerCNN(LayerNN):
         :param optimized: boolean, whether to use highly optimized version or not. In case TRUE - it is able to run only on GPU.
         :param kwargs: other parameters are inherited from LayerNN.__init__()
 
+        .. role:: pcode(code)
+           :language: python
+
         .. note::
-           In case :code:`optimized = True` there are number of restrictions you have take into account:
+           In case :pcode:`optimized = True` there are number of restrictions you have take into account:
 
            * The **number of channels must be even, or less than or equal to 3**.
              If you want to compute the gradient, it should be divisible by 4.
