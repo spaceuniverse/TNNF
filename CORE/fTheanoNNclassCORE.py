@@ -309,7 +309,7 @@ class LayerNN(object):
         :param num: batch size
         :return:
         """
-        sprs = T.sum(net.varArrayA[layerNum], axis=1) / (num + 0.0)
+        sprs = T.mean(net.varArrayA[layerNum], axis=1)
         epsilon = 1e-20
         sprs = T.clip(sprs, epsilon, 1 - epsilon)
         KL = T.sum(
@@ -599,11 +599,8 @@ class LayerCNN(LayerNN):
         :param optimized: boolean, whether to use highly optimized version or not. In case TRUE - it is able to run only on GPU.
         :param kwargs: other parameters are inherited from LayerNN.__init__()
 
-        .. role:: pcode(code)
-           :language: python
-
         .. note::
-           In case :pcode:`optimized = True` there are number of restrictions you have take into account:
+           In case :code:`optimized = True` there are number of restrictions you have take into account:
 
            * The **number of channels must be even, or less than or equal to 3**.
              If you want to compute the gradient, it should be divisible by 4.
@@ -680,11 +677,24 @@ class LayerCNN(LayerNN):
             net.dropOutVectors.append(1.0)
 
     def compileSparsity(self, net, layerNum, num):
+        """
+        In general, method does the same as :func:`~fTheanoNNclassCORE.LayerNN.compileSparsity`.
+        Can be used in combination with :func:`~fTheanoNNclassCORE.FunctionModel.Sigmoid` only.
+
+        But concretely for CNN it was a little bit modified, to be able to calculates average activations from *bc01* format.
+
+        .. note::
+
+           *bc01 - mean: batch x color x size_X x size_Y*
+
+        :param net: TheanoNNclass object
+        :param layerNum: int, layer's index
+        :param num: batch size
+        """
         a = net.varArrayA[layerNum]
         out_size = T.cast(T.sqrt(T.shape(a)[0] / self.kernel_shape[0]), 'int16')
         a = T.reshape(a, (net.options.minibatch_size, self.kernel_shape[0], out_size, out_size))
-        #sprs = T.mean(a, axis=(1, 2, 3))
-        sprs = T.mean(a, axis=1)
+        sprs = T.mean(a, axis=[0, 2, 3])
         epsilon = 1e-20
         sprs = T.clip(sprs, epsilon, 1 - epsilon)
         KL = T.sum(self.sparsity * T.log(self.sparsity / sprs) + (1 - self.sparsity) * T.log((1 - self.sparsity) / (1 - sprs))) / (out_size * out_size)
