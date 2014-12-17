@@ -1126,7 +1126,7 @@ class TheanoNNclass(object):
                                        allow_input_downcast=True)
         return self
 
-    def predictCalc(self, X, debug=True):  # Need to call predictCompile before
+    def predictCalc(self, X, debug=False):  # Need to call predictCompile before
         self.out = self.predict(X)  # Matrix of outputs. Each column is a picture reshaped in vector of features
         if debug:
             print 'out.shape:', self.out.shape
@@ -1185,8 +1185,8 @@ class TheanoNNclass(object):
         self.getStatus()
         return self
 
-    def weightsVisualizer(self, folder, size=(100, 100),
-                          color="L", second=False):  # For now only for first layer. Second in test mode
+    # For now only for first layer. Second in test mode
+    def weightsVisualizer(self, folder, size=(100, 100), color="L", second=False):
         # gradArray -> [w0, b0, w1, b1, ...] RANDOM!11
         W = []
         for i in xrange(self.lastArrayNum):  # Possible use len(self.varArrayB) or len(self.varArrayW) instead
@@ -1194,13 +1194,20 @@ class TheanoNNclass(object):
         # print len(W), W[0].get_value().shape, W[1].get_value().shape DONT CLEAR THIS PLZ
         W1 = W[0].get_value()
         W2 = W[1].get_value()  # Second layer test. Weighted linear combination of the first layer bases
+        DrawW1 = MultiWeights(name='W1_weights')
+        DrawW2 = MultiWeights(name='W2_weights')
         for w in xrange(len(W1)):
             img = W1[w, :].reshape(size[0], size[1])  # Fix to auto get size TODO
-            Graphic.PicSaver(img, folder, "L1_" + str(w), color)
+            #Graphic.PicSaver(img, folder, "/L1_" + str(w), color)
+            DrawW1.add(img)
         if second:
             for w in xrange(len(W2)):
                 img = np.dot(W1.T, W2[w, :]).reshape(size[0], size[1])
-                Graphic.PicSaver(img, folder, "L2_" + str(w), color)
+                #Graphic.PicSaver(img, folder, "/L2_" + str(w), color)
+                DrawW2.add(img)
+            DrawW2.draw()
+
+        DrawW1.draw()
         return self
 
     def unroll(self):
@@ -1255,8 +1262,8 @@ class TheanoNNclass(object):
 
 class NNsupport(object):
     @staticmethod
-    def crossV(number, y, x, modelObj):
-        ERROR = 1.0 / number * np.sum((y - modelObj.predictCalc(x).out) ** 2 * 0.5)
+    def crossV(y, x, modelObj):
+        ERROR = np.sum((y - modelObj.predictCalc(x).out) ** 2 * 0.5) / x.shape[1]
         return ERROR
 
     @staticmethod

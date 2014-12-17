@@ -151,7 +151,7 @@ for i in xrange(iterations):
         close()
 
         #Estimate Neural Network error (square error, "distance" between real and predicted value) on cross-validation
-        cv_err.append(NNsupport.crossV(dataSize, CV_labels, CV, NN))
+        cv_err.append(NNsupport.crossV(CV_labels, CV, NN))
 
         #Estimate network's accuracy
         accuracy = np.mean(CV_labels == np.round(NN.out))

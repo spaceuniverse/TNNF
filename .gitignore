@@ -23,6 +23,9 @@ mnist/
 undeployed/TheanoConv/Data/
 doc/_build
 
+#Excluded example's data directory
+doc/src/HOWTOs/Data/src
+
 #Script to run tests
 runTests.cmd
 
@@ -56,3 +59,4 @@ Icon
 # Files that might appear on external disk
 .Spotlight-V100
 .Trashes
+
