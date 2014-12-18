@@ -1186,7 +1186,7 @@ class TheanoNNclass(object):
         return self
 
     # For now only for first layer. Second in test mode
-    def weightsVisualizer(self, folder, size=(100, 100), color="L", second=False):
+    def weightsVisualizer(self, folder, size=(100, 100), color="L", second=False, name='weights'):
         # gradArray -> [w0, b0, w1, b1, ...] RANDOM!11
         W = []
         for i in xrange(self.lastArrayNum):  # Possible use len(self.varArrayB) or len(self.varArrayW) instead
@@ -1194,8 +1194,8 @@ class TheanoNNclass(object):
         # print len(W), W[0].get_value().shape, W[1].get_value().shape DONT CLEAR THIS PLZ
         W1 = W[0].get_value()
         W2 = W[1].get_value()  # Second layer test. Weighted linear combination of the first layer bases
-        DrawW1 = MultiWeights(name='W1_weights')
-        DrawW2 = MultiWeights(name='W2_weights')
+        DrawW1 = MultiWeights(path=folder, name='W1_' + name)
+        DrawW2 = MultiWeights(path=folder, name='W2_' + name)
         for w in xrange(len(W1)):
             img = W1[w, :].reshape(size[0], size[1])  # Fix to auto get size TODO
             #Graphic.PicSaver(img, folder, "/L1_" + str(w), color)

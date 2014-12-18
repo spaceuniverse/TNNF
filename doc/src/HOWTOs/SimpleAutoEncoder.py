@@ -51,9 +51,7 @@ checkCvEvery = 500
 #Common options for whole NN
 options = OptionsStore(learnStep=0.005,
                        rmsProp=0.9,
-                       #rProp=0.8,
                        mmsmin=1e-20,
-                       #minibatch_size=dataSize,
                        minibatch_size=batchSize,
                        CV_size=cvSize)
 
