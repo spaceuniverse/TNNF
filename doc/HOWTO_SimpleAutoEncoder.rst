@@ -76,6 +76,46 @@ Then, given variety of *average activation* on *X-axis* we can observe penalty v
 As you can see - **Penalty** is very close to zero only when our **Average activation** is close to the *0.2* and
 vice-versa - the more **average activation** gets away from desired *0.2*, the bigger **Penalty** becomes.
 
+We will restrict hidden layer average activation to force neural network detect common patterns in input data.
+Concretely, we restrict the number of neurons we need to describe data.
+This means, that every neuron that activates - represents pattern (features) in input data.
+
+Neural Network
+--------------
+
+We done with theory, let's program AE using TNNF!
+
+So our AE consist of two layers and has **Input, Hidden and Output** abstracts.
+Don't be confused with three abstracts. **Input** abstract is always there. It doesn't take separate layer.
+
+As input we have 28x28 images, that gives us *28 x 28 = 784* values for each example on the input.
+As we train AE, the neural network that tries to replicate on the output what it has on input - we have *784* values on output.
+
+Let's use *196* neuron on the hidden layer with *average activation = 0.1* .
+(Architecture took from `UFLDL tutorial <http://ufldl.stanford.edu/wiki/index.php/Exercise:Vectorization>`_)
+
+Everything above give us next network architecture:
+
+ * Input: 784 neurons
+ * Hidden: 196 neurons (with average activation restricted to *0.1*)
+ * Output: 784 neurons
+
+To represent this in code we need two layers. First layer:
+
+.. literalinclude:: src/HOWTOs/SimpleAutoEncoder.py
+   :language: python
+   :start-after: #First layer
+   :end-before: #Second layer
+
+Second layer:
+
+.. literalinclude:: src/HOWTOs/SimpleAutoEncoder.py
+   :language: python
+   :start-after: #Second layer
+   :end-before: #Compile all together
+
+
+
 
 
 

@@ -55,6 +55,7 @@ options = OptionsStore(learnStep=0.005,
                        minibatch_size=batchSize,
                        CV_size=cvSize)
 
+#First layer
 L1 = LayerNN(size_in=inputSize,
              size_out=numberOfFeatures,
              sparsity=0.1,
@@ -62,11 +63,13 @@ L1 = LayerNN(size_in=inputSize,
              weightDecay=3e-3,
              activation=FunctionModel.Sigmoid)
 
+#Second layer
 L2 = LayerNN(size_in=numberOfFeatures,
              size_out=inputSize,
              weightDecay=3e-3,
              activation=FunctionModel.Sigmoid)
 
+#Compile all together
 AE = TheanoNNclass(options, (L1, L2))
 
 AE.trainCompile()
