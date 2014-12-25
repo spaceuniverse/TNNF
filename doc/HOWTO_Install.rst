@@ -3,7 +3,7 @@ How to Install and Run
 
 * `Python installation`_
 * `Dependencies`_ (numpy, cuda, theano etc.)
-* `SSBrain installation`_
+* `TNNF installation`_
 
 Python installation
 -------------------
@@ -82,7 +82,7 @@ To perform GPU calculation you have to have:
 * Appropriate nVidia driver installed
 * Appropriate CUDA toolkit installed (both 5.5 and 5.0 are supported)
 
-SSBrain installation
+TNNF installation
 --------------------
 
 There is no "installation" needed.
