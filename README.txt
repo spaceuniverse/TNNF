@@ -3,11 +3,15 @@
 This repo **is a fork of original** repo, copied for experiments.
 All actual development is going in original repo.
 
+###
+
 Some file and methods names:
 
 TNNF - Tiny Neural Net Framework (All files and classes)
 
 Online auto-generated docs: http://tnnf.readthedocs.org/en/latest/index.html
+
+###
 
 Features:
 
@@ -25,6 +29,7 @@ Features:
 + PCA whitening
 + convolution
 
+###
 
 All CORE files of library:
 
