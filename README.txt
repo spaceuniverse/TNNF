@@ -1,5 +1,8 @@
 # README
 
+This repo **is a fork of original** repo, copied for experiments.
+All actual development is going in original repo.
+
 Some file and methods names:
 
 TNNF - Tiny Neural Net Framework (All files and classes)
@@ -23,7 +26,7 @@ Features:
 + convolution
 
 
-Files:
+All CORE files of library:
 
 fTheanoNNclassCORE.py - main theano neural net class
 fSimpleTest.py - simple tests for framework methods and functions
