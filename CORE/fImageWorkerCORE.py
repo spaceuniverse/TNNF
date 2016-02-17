@@ -58,7 +58,7 @@ class MultiWeights(object):
         border = 1
 
         #Picture's size
-        picH, picW = self.pictures[-1].shape
+        picH, picW, picC = self.pictures[-1].shape
 
         #Define pictures location
         self.defineOptimalPicLocation(numOfPictures)
@@ -77,7 +77,8 @@ class MultiWeights(object):
             for w in xrange(self.width):
 
                 offset = (border + w * (picW + border), border + h * (picH + border))
-                plate.paste(Image.fromarray(DataMutate.Normalizer(self.pictures[count])), offset)
+                #print self.pictures[count].shape
+                plate.paste(Image.fromarray(DataMutate.Normalizer(self.pictures[count]).astype('uint8')), offset)
 
                 count += 1
                 if count == numOfPictures:

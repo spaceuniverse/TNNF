@@ -48,6 +48,7 @@ class CutClass(object):
         self.xwindow = xwindow
         self.ywindow = ywindow
         self.windowSet = []
+        self.coordSet = []
 
     def cutter(self, conv=False, step=25):
         window = np.zeros(shape=(self.xwindow, self.ywindow))
@@ -55,16 +56,24 @@ class CutClass(object):
         jrange = range(self.imgArray.shape[1] / (self.ywindow * (not (conv)) + step * conv))
         for i in irange[:len(irange) - (self.xwindow / step - 1) * conv]:
             for j in jrange[:len(jrange) - (self.ywindow / step - 1) * conv]:
-                window = self.imgArray[i * (self.xwindow * (not (conv)) + step * conv): i * (
-                    self.xwindow * (not (conv)) + step * conv) + self.xwindow,
-                         j * (self.ywindow * (not (conv)) + step * conv): j * (
-                             self.ywindow * (not (conv)) + step * conv) + self.ywindow]
+                # x1   x2
+                # x3   x4
+                # Corners
+                x1 = i * (self.xwindow * (not (conv)) + step * conv)
+                x2 = i * (self.xwindow * (not (conv)) + step * conv) + self.xwindow
+                x3 = j * (self.ywindow * (not (conv)) + step * conv)
+                x4 = j * (self.ywindow * (not (conv)) + step * conv) + self.ywindow
+                window = self.imgArray[x1 : x2, x3 : x4]
                 self.windowSet.append(window)
+                self.coordSet.append((x1, x2, x3, x4))
         self.windowSet = np.array(self.windowSet)
         return self
 
     def getter(self):
-        return self.windowSet
+        return self.windowSet #, self.coordSet
+
+    def getter2(self):
+        return self.coordSet
 
     def status(self):
         return str(self.windowSet.shape) + "\n" + self.REPORT

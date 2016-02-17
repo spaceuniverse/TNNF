@@ -64,7 +64,7 @@ class Graph(object):
         xlabel('epochs', fontsize=10)
         ylabel('Error', fontsize=10)
         if legend_on:
-            legend(loc='upper right', fontsize=10, numpoints=3, shadow=True, fancybox=True)
+            legend(loc='best', fontsize=10, numpoints=3, shadow=True, fancybox=True)
 
         #Grid
         grid()

@@ -256,19 +256,20 @@ class LayerNN(object):
             weights = np.random.randn(self.size_out * self.pool_size, self.size_in)
 
         #weights rescale
-        weights_min = np.min(weights)
-        weights = weights - weights_min
-        weights_max = np.max(weights)
-        weights = weights / weights_max
+        #weights_min = np.min(weights)
+        #weights = weights - weights_min
+        #weights_max = np.max(weights)
+        #weights = weights / weights_max
 
-        w = theano.shared((weights * 2 * random - random).astype(theano.config.floatX), name="w%s" % (layerNum + 1))
+        #w = theano.shared((weights * 2 * random - random).astype(theano.config.floatX), name="w%s" % (layerNum + 1))
+        w = theano.shared((weights * 0.01).astype(theano.config.floatX), name="w%s" % (layerNum + 1))
 
         W['w'] = w
 
         if self.activation != FunctionModel.MaxOut:
-            b = theano.shared(np.tile(0.0, (self.size_out,)).astype(theano.config.floatX), name="b%s" % (layerNum + 1))
+            b = theano.shared(np.tile(0.1, (self.size_out,)).astype(theano.config.floatX), name="b%s" % (layerNum + 1))
         else:
-            b = theano.shared(np.tile(0.0, (self.size_out * self.pool_size,)).astype(theano.config.floatX),
+            b = theano.shared(np.tile(0.1, (self.size_out * self.pool_size,)).astype(theano.config.floatX),
                               name="b%s" % (layerNum + 1))
         W['b'] = b
         net.varWeights.append(W)
@@ -309,7 +310,7 @@ class LayerNN(object):
         :param num: batch size
         :return:
         """
-        sprs = T.mean(net.varArrayA[layerNum], axis=1)
+        sprs = T.sum(net.varArrayA[layerNum], axis=1) / (num + 0.0)
         epsilon = 1e-20
         sprs = T.clip(sprs, epsilon, 1 - epsilon)
         KL = T.sum(
@@ -639,7 +640,7 @@ class LayerCNN(LayerNN):
             raise NotImplementedError('MaxOut activation function for Convolution nets is not implemented yet!')
 
         #Random init for CNN. Without reshape. Init exact kernel shape
-        weights = np.random.standard_normal(size=self.kernel_shape)
+        weights = np.random.randn(*self.kernel_shape)
 
         #if self.activation != FunctionModel.MaxOut:
         #    #Random init for CNN. Without reshape. Init exact kernel shape
@@ -648,17 +649,18 @@ class LayerCNN(LayerNN):
         #    weights = np.random.standard_normal(size=(self.kernel_shape[0] * self.pool_size, self.kernel_shape[1], self.kernel_shape[2], self.kernel_shape[3]))
 
         #weights rescale
-        weights_min = np.min(weights)
-        weights = weights - weights_min
-        weights_max = np.max(weights)
-        weights = weights / weights_max
+        #weights_min = np.min(weights)
+        #weights = weights - weights_min
+        #weights_max = np.max(weights)
+        #weights = weights / weights_max
 
-        w = theano.shared((weights * 2 * random - random).astype(theano.config.floatX), name="w%s" % (layerNum + 1))
+        #w = theano.shared((weights * 2 * random - random).astype(theano.config.floatX), name="w%s" % (layerNum + 1))
+        w = theano.shared((weights * 0.01).astype(theano.config.floatX), name="w%s" % (layerNum + 1))
 
         W['w'] = w
 
         #Bias shape == number of kernels
-        b = theano.shared(np.tile(0.0, (self.kernel_shape[0],)).astype(theano.config.floatX), name="b%s" % (layerNum + 1))
+        b = theano.shared(np.tile(0.1, (self.kernel_shape[0],)).astype(theano.config.floatX), name="b%s" % (layerNum + 1))
 
         W['b'] = b
         net.varWeights.append(W)
@@ -694,7 +696,8 @@ class LayerCNN(LayerNN):
         a = net.varArrayA[layerNum]
         out_size = T.cast(T.sqrt(T.shape(a)[0] / self.kernel_shape[0]), 'int16')
         a = T.reshape(a, (net.options.minibatch_size, self.kernel_shape[0], out_size, out_size))
-        sprs = T.mean(a, axis=[0, 2, 3])
+        #sprs = T.mean(a, axis=(1, 2, 3))
+        sprs = T.mean(a, axis=1)
         epsilon = 1e-20
         sprs = T.clip(sprs, epsilon, 1 - epsilon)
         KL = T.sum(self.sparsity * T.log(self.sparsity / sprs) + (1 - self.sparsity) * T.log((1 - self.sparsity) / (1 - sprs))) / (out_size * out_size)
@@ -746,7 +749,8 @@ class LayerCNN(LayerNN):
                 a = pool_op(contiguous_input)
                 a = a.dimshuffle(3, 0, 1, 2)       # c01b to bc01
             else:
-                a = downsample.max_pool_2d(a, (self.pooling_shape, self.pooling_shape), ignore_border=False)
+                #a = downsample.max_pool_2d(a, (self.pooling_shape, self.pooling_shape), ignore_border=False)
+                a = pool.max_pool2D(a, (self.pooling_shape, self.pooling_shape), ignore_border=False)
         else:
             if self.optimized:
                 a = a.dimshuffle(3, 0, 1, 2)       # c01b to bc01
@@ -803,7 +807,8 @@ class LayerCNN(LayerNN):
                 a = pool_op(contiguous_input)
                 a = a.dimshuffle(3, 0, 1, 2)       # c01b to bc01
             else:
-                a = downsample.max_pool_2d(a, (self.pooling_shape, self.pooling_shape), ignore_border=False)
+                #a = downsample.max_pool_2d(a, (self.pooling_shape, self.pooling_shape), ignore_border=False)
+                a = pool.max_pool2D(a, (self.pooling_shape, self.pooling_shape), ignore_border=False)
         else:
             if self.optimized:
                 a = a.dimshuffle(3, 0, 1, 2)       # c01b to bc01
@@ -970,6 +975,7 @@ class TheanoNNclass(object):
         # Update output array
         self.outputArray.append(self.cost)
         self.outputArray.append(XENT)
+        self.outputArray.append(self.varArrayA[-1])
 
         # Derivatives
         # All variables to gradArray list to show to Theano on which variables we need an gradient
@@ -986,7 +992,8 @@ class TheanoNNclass(object):
                                      name="mmsp%s" % (i + 1))  # 0.0 - 1.0 maybe
                 self.MMSprev.append(mmsp)
                 mmsn = self.options.rmsProp * mmsp + (1 - self.options.rmsProp) * self.derivativesArray[i] ** 2
-                mmsn = T.clip(mmsn, self.options.mmsmin, 1e+15)  # Fix nan if rmsProp
+                #mmsn = T.clip(mmsn, self.options.mmsmin, 1e+15)  # Fix nan if rmsProp
+                mmsn = T.clip(mmsn, self.options.mmsmin, np.finfo(np.float32).max)  # Fix nan if rmsProp
                 self.MMSnew.append(mmsn)
 
         # Update values
@@ -1108,20 +1115,21 @@ class TheanoNNclass(object):
         """
 
         for i in xrange(iteration):
-            error, ent = self.train(X, Y)
+            error, ent, out = self.train(X, Y)
+            self.train_out = out
             if errorCollect:
                 self.errorArray.append(ent)
             if debug:
                 print ent, error
         return self
 
-    def predictCompile(self):
+    def predictCompile(self, layerNum=-1):
         # Predict activation
         for i in xrange(self.lastArrayNum):
             self.architecture[i].compilePredictActivation(self, i)
 
         self.predict = theano.function(inputs=[self.x],
-                                       outputs=self.varArrayAc[-1],
+                                       outputs=self.varArrayAc[layerNum],
                                        updates=self.updatesArrayPredict,
                                        allow_input_downcast=True)
         return self
@@ -1194,20 +1202,13 @@ class TheanoNNclass(object):
         # print len(W), W[0].get_value().shape, W[1].get_value().shape DONT CLEAR THIS PLZ
         W1 = W[0].get_value()
         W2 = W[1].get_value()  # Second layer test. Weighted linear combination of the first layer bases
-        DrawW1 = MultiWeights(path=folder, name='W1_' + name)
-        DrawW2 = MultiWeights(path=folder, name='W2_' + name)
         for w in xrange(len(W1)):
             img = W1[w, :].reshape(size[0], size[1])  # Fix to auto get size TODO
-            #Graphic.PicSaver(img, folder, "/L1_" + str(w), color)
-            DrawW1.add(img)
+            Graphic.PicSaver(img, folder, "L1_" + str(w), color)
         if second:
             for w in xrange(len(W2)):
                 img = np.dot(W1.T, W2[w, :]).reshape(size[0], size[1])
-                #Graphic.PicSaver(img, folder, "/L2_" + str(w), color)
-                DrawW2.add(img)
-            DrawW2.draw()
-
-        DrawW1.draw()
+                Graphic.PicSaver(img, folder, "L2_" + str(w), color)
         return self
 
     def unroll(self):
@@ -1262,8 +1263,8 @@ class TheanoNNclass(object):
 
 class NNsupport(object):
     @staticmethod
-    def crossV(y, x, modelObj):
-        ERROR = np.sum((y - modelObj.predictCalc(x).out) ** 2 * 0.5) / x.shape[1]
+    def crossV(number, y, x, modelObj):
+        ERROR = 1.0 / number * np.sum((y - modelObj.predictCalc(x).out) ** 2 * 0.5)
         return ERROR
 
     @staticmethod
