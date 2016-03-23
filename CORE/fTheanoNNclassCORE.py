@@ -583,7 +583,8 @@ class LayerRNN(LayerNN):
 
 
 class LayerCNN(LayerNN):
-    def __init__(self, kernel_shape=None, stride=1, pooling=False, pooling_shape=None, optimized=False, **kwargs):
+    def __init__(self, kernel_shape=None, stride=1, pooling=False, pooling_shape=None, optimized=False,
+                 validConvolution=True, **kwargs):
         """
         Layer class that extends standard LayerNN class and implements CNN (convolution, **not fully connected**) type of network.
         The most useful type of network to apply for image processing beyond others NN algorithms.
@@ -598,6 +599,7 @@ class LayerCNN(LayerNN):
         :param pooling: boolean, whether to use pooling after convolution or not
         :param pooling_shape: int, pooling window's shape. Stride will be the same, so only standard non-overlapping pooling is available.
         :param optimized: boolean, whether to use highly optimized version or not. In case TRUE - it is able to run only on GPU.
+        :param validConvolution: whether to use valid (convolve fully overlapped parts) or full (convolve partially overlapped parts) convolution.
         :param kwargs: other parameters are inherited from LayerNN.__init__()
 
         .. note::
@@ -622,6 +624,7 @@ class LayerCNN(LayerNN):
         self.pooling = pooling                  # whether we want to use pooling at all
         self.pooling_shape = pooling_shape      # stride for pooling
         self.optimized = optimized
+        self.validConvolution = validConvolution
 
 
     def compileWeight(self, net, layerNum):
@@ -717,7 +720,7 @@ class LayerCNN(LayerNN):
                 T.ceil((T.shape(Xr)[-1] - T.shape(net.varWeights[layerNum]['w'])[-1] + 1) / np.float32(self.stride)),
                 'int32')
 
-            conv_op = FilterActs(stride=self.stride)
+            conv_op = FilterActs(stride=self.stride, pad=0 if self.validConvolution else self.kernel_shape[-1] - 1)
             input_shuffled = Xr.dimshuffle(1, 2, 3, 0)  # bc01 to c01b
             filters_shuffled = net.varWeights[layerNum]['w'].dimshuffle(1, 2, 3, 0)  # bc01 to c01b
             filters_flipped = filters_shuffled[:, ::-1, ::-1, :] # flip rows and columns
@@ -731,7 +734,7 @@ class LayerCNN(LayerNN):
         else:
             a = T.nnet.conv2d(Xr, net.varWeights[layerNum]['w'] *
                               (net.dropOutVectors[layerNum].dimshuffle('x', 'x', 0, 1) if self.dropout else 1.0),
-                              border_mode='valid',
+                              border_mode='valid' if self.validConvolution else 'full',
                               subsample=(self.stride, self.stride))
             #Add bias
             a = a + net.varWeights[layerNum]['b'].dimshuffle('x', 0, 'x', 'x')
@@ -776,7 +779,7 @@ class LayerCNN(LayerNN):
                 T.ceil((T.shape(Xr)[-1] - T.shape(net.varWeights[layerNum]['w'])[-1] + 1) / np.float32(self.stride)),
                 'int32')
 
-            conv_op = FilterActs(stride=self.stride)
+            conv_op = FilterActs(stride=self.stride, pad=0 if self.validConvolution else self.kernel_shape[-1] - 1)
             input_shuffled = Xr.dimshuffle(1, 2, 3, 0)  # bc01 to c01b
             filters_shuffled = net.varWeights[layerNum]['w'].dimshuffle(1, 2, 3, 0)  # bc01 to c01b
             filters_flipped = filters_shuffled[:, ::-1, ::-1, :]    # flip rows and columns
@@ -789,7 +792,7 @@ class LayerCNN(LayerNN):
         else:
             a = T.nnet.conv2d(Xr, net.varWeights[layerNum]['w'] *
                               (net.dropOutVectors[layerNum].dimshuffle('x', 'x', 0, 1) if self.dropout else 1.0),
-                              border_mode='valid',
+                              border_mode='valid' if self.validConvolution else 'full',
                               subsample=(self.stride, self.stride))
 
             #Add bias
